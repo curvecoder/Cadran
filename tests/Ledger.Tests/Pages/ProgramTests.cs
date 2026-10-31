@@ -104,6 +104,20 @@ public class ProgramTests : IClassFixture<AppWebApplicationFactory>
     }
 
     [Fact]
+    public async Task LogoutEndpoint_WhenRequested_IsRoutedAndRedirectsToLogin()
+    {
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+
+        var response = await client.GetAsync("/Security/Logout");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Redirect);
+        response.Headers.Location?.ToString().Should().Contain("/Security/Login");
+    }
+
+    [Fact]
     public async Task UnlockDatabaseEndpoint_WhenAlreadyUnlocked_RedirectsToHome()
     {
         var client = _factory.CreateClient(new WebApplicationFactoryClientOptions
