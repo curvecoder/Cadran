@@ -148,3 +148,12 @@ Remédier aux écarts relevés par l'audit du 29/10/2026 aux 17 règles d'or, pa
 - Release publiée avec le zip Windows, le tar.gz Linux et `SHA256SUMS.txt` (aucun `*.db`, `appsettings.Development.json` ni `.sonar-token` dans les archives). Notes « What's New » du script mises à jour.
 - **Reste à faire** : l'utilisateur confirme sous Linux avec le tar.gz 1.3.2 que la langue tient en HTTP direct et que le déverrouillage se fait sans page d'erreur.
 - **Point d'attention** : ne jamais écrire dans le dépôt de nom de domaine privé ni d'IP internes (hook `pre-push`).
+
+### Passation du 31/10/2026 (fin de session : release 1.3.3)
+- **Objectif** : corriger la déconnexion remontée par l'utilisateur sous Linux (404 sur `/Security/Logout`, pas de nouvelle demande de connexion, clé de chiffrement jamais redemandée).
+- **Publié** : release `v1.3.3` (tag annoté sur `40e58f4`, zip Windows, tar.gz Linux, `SHA256SUMS.txt`). `verify.ps1` sur `40e58f4` : QUALITY GATE PASSED. La 1.3.2 (`v1.3.2`, `b4882d6`) est aussi publiée.
+- **Corrigé dans la 1.3.3** : la page `Logout` n'avait pas de `Logout.cshtml` (route inexistante depuis l'origine) ; le formulaire de déconnexion de `_Layout.cshtml` n'envoyait pas de jeton antiforgery (`action` explicite), d'où un POST rejeté en 400 ; la déconnexion reverrouille la base quand la clé n'est pas mémorisée (`IDatabaseEncryptionService.LockUnlessRememberedAsync`, qui vide `IDatabaseKeyHolder` seulement si la base est chiffrée et qu'aucune clé n'est sauvegardée). Tests : `ProgramTests`, `DatabaseEncryptionServiceTests`, `SecurityPageModelsTests`, E2E `NavbarComponent_WhenLogoutClicked_EndsSessionAndRequiresNewSignIn`.
+- **Reste à faire** :
+  1. L'utilisateur confirme sous Linux avec le tar.gz 1.3.3 : la déconnexion mène à la page de connexion, la clé est redemandée quand elle n'est pas mémorisée, la langue tient en HTTP direct, le déverrouillage se fait sans page d'erreur.
+  2. Décision ouverte : `GET /Security/Logout` déconnecte aussi (`OnGetAsync`), donc un lien externe peut déconnecter et reverrouiller la base ; à restreindre au POST si l'utilisateur le souhaite.
+- **Points d'attention** : un test E2E qui clique réellement sur une action la révèle mieux qu'un test de PageModel (la déconnexion n'avait jamais été exercée). Ne jamais écrire de nom de domaine privé ni d'IP internes dans le dépôt (le hook `pre-push` bloque). Ne jamais ajouter `Cadran.Launcher/Properties/` aux commits. Ne pas pousser, taguer ni publier sans accord.
