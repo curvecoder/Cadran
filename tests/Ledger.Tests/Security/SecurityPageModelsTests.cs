@@ -234,7 +234,8 @@ public class SecurityPageModelsTests
     public async Task OnPostLogoutAsync_WhenInvoked_SignsOutAndRedirectsToLogin()
     {
         var mockAuth = new Mock<IAuthService>();
-        var model = new LogoutModel(mockAuth.Object);
+        var mockEncryption = new Mock<IDatabaseEncryptionService>();
+        var model = new LogoutModel(mockAuth.Object, mockEncryption.Object);
 
         var postResult = await model.OnPostAsync();
         postResult.Should().BeOfType<RedirectResult>()
@@ -245,6 +246,7 @@ public class SecurityPageModelsTests
             .Which.Url.Should().Be("/Security/Login");
 
         mockAuth.Verify(a => a.SignOutAsync(), Times.Exactly(2));
+        mockEncryption.Verify(e => e.LockUnlessRememberedAsync(), Times.Exactly(2));
     }
 
     #endregion

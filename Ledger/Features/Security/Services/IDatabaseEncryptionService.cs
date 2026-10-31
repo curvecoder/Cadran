@@ -49,4 +49,10 @@ public interface IDatabaseEncryptionService
     /// Active ou désactive la mémorisation sur cet appareil avec la clé en mémoire.
     /// </summary>
     Task SetRememberOnDeviceAsync(bool remember);
+
+    /// <summary>
+    /// Retire la clé de la mémoire du processus quand elle n'est pas mémorisée sur cet appareil, pour que la base redemande la phrase de passe.
+    /// Sans effet si la base n'est pas chiffrée ou si la mémorisation est active.
+    /// </summary>
+    Task LockUnlessRememberedAsync();
 }

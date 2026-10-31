@@ -9,7 +9,7 @@ namespace Ledger.Tests.E2E.Tests;
 /// </summary>
 [Collection(E2ETestCollection.Name)]
 public sealed class NavbarComponentTests(AppWebTestFixture webFixture, PlaywrightFixture playwrightFixture)
-    : E2ETestBase(webFixture, playwrightFixture)
+    : AuthenticatedE2ETestBase(webFixture, playwrightFixture)
 {
     [Fact]
     public async Task NavbarComponent_WhenLoaded_DisplaysBrandAndPublicLinks()
@@ -74,5 +74,19 @@ public sealed class NavbarComponentTests(AppWebTestFixture webFixture, Playwrigh
 
         var currentLang = await navbar.GetCurrentLanguageCodeAsync();
         currentLang.Should().Be("de");
+    }
+
+    [Fact]
+    public async Task NavbarComponent_WhenLogoutClicked_EndsSessionAndRequiresNewSignIn()
+    {
+        var navbar = new NavbarComponent(Page);
+        await RegisterAndSignInAsync();
+
+        await navbar.ClickLogoutAsync();
+        await Page.WaitForURLAsync("**/Security/Login*");
+
+        await Page.GotoAsync($"{BaseUrl}/Accounts");
+        await Page.WaitForURLAsync("**/Security/Login*");
+        Page.Url.Should().Contain("/Security/Login");
     }
 }

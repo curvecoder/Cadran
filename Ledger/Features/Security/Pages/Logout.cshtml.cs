@@ -4,11 +4,12 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Ledger.Features.Security.Pages;
 
-public class LogoutModel(IAuthService authService) : PageModel
+public class LogoutModel(IAuthService authService, IDatabaseEncryptionService encryptionService) : PageModel
 {
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken = default)
     {
         await authService.SignOutAsync(cancellationToken);
+        await encryptionService.LockUnlessRememberedAsync();
         return Redirect("/Security/Login");
     }
 

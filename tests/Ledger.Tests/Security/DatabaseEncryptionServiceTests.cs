@@ -63,6 +63,37 @@ public sealed class DatabaseEncryptionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task LockUnlessRememberedAsync_WhenKeyIsNotRemembered_LocksTheDatabase()
+    {
+        _keyHolder.SetKey("ValidKey123!", isEncrypted: true);
+
+        await _service.LockUnlessRememberedAsync();
+
+        _service.IsDatabaseLocked().Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task LockUnlessRememberedAsync_WhenKeyIsRemembered_KeepsTheDatabaseUnlocked()
+    {
+        _keyHolder.SetKey("ValidKey123!", isEncrypted: true);
+        await _keyStore.SaveKeyAsync("ValidKey123!");
+
+        await _service.LockUnlessRememberedAsync();
+
+        _service.IsDatabaseLocked().Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task LockUnlessRememberedAsync_WhenDatabaseIsNotEncrypted_DoesNothing()
+    {
+        _keyHolder.SetKey(null, isEncrypted: false);
+
+        await _service.LockUnlessRememberedAsync();
+
+        _service.IsDatabaseLocked().Should().BeFalse();
+    }
+
+    [Fact]
     public void CheckIfFileEncrypted_ReturnsFalse_WhenFileDoesNotExist()
     {
         DatabaseEncryptionService.CheckIfFileEncrypted("non_existent_file.db").Should().BeFalse();

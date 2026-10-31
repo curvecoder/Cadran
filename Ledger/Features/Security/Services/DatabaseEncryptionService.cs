@@ -67,6 +67,22 @@ public sealed class DatabaseEncryptionService(
     public Task SetRememberOnDeviceAsync(bool remember) =>
         _innerService.SetRememberOnDeviceAsync(remember, CancellationToken.None);
 
+    /// <inheritdoc />
+    public async Task LockUnlessRememberedAsync()
+    {
+        if (!keyHolder.IsDatabaseEncrypted || !keyHolder.IsUnlocked)
+        {
+            return;
+        }
+
+        if (await keyStore.HasSavedKeyAsync().ConfigureAwait(false))
+        {
+            return;
+        }
+
+        keyHolder.Clear();
+    }
+
     /// <summary>
     /// Détecte si un fichier physique SQLite est chiffré en analysant son en-tête de 16 octets.
     /// </summary>
