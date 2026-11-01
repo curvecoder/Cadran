@@ -1,6 +1,6 @@
 # Benutzerhandbuch: Benutzerdefinierte Buchungsstatus & Abstimmung
 
-[← Zurück zu Kontotypen](10-account-types.md) | [Zurück zum Hauptindex](../README.md)
+[← Zurück zu Kontotypen](10-account-types.md) | [Zurück zum Hauptindex](../README.md) | [Weiter: 12 - Einheitliches Buchungsjournal →](12-transactions-ledger.md)
 
 ---
 

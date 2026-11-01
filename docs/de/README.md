@@ -29,23 +29,24 @@ Willkommen im umfassenden Schritt-für-Schritt-Benutzerhandbuch für **Cadran**.
 - 🏷️ **[10. Benutzerdefinierte Kontotypen](screens/10-account-types.md)** — Maßgeschneiderte Klassifizierungen und übergeordnete Anlagegruppen.
 - 🎯 **[11. Benutzerdefinierte Buchungsstatus](screens/11-account-statuses.md)** — Abstimmungs-Tags und Standard-Importverhalten.
 
-### 💸 3. Buchungsoperationen & Split-Buchungen (Batch 3 — In Kürze)
-- 📝 **12. Buchung hinzufügen & bearbeiten** — Eingabemodal und Buchungsfelder.
-- ✂️ **13. Split-Buchung durchführen** — Mehrebenen-Kassenbon-Aufteilung.
-- 🔍 **14. Sammelabstimmung & Stapelkategorisierung** — Mehrfachauswahl-Aktionen.
+### 💸 3. Buchungsoperationen & Split-Buchungen (Batch 3 — Abgeschlossen)
+- 📋 **[12. Einheitliches Buchungsjournal](screens/12-transactions-ledger.md)** — Zusammengeführtes Journal über mehrere Konten, Suche und schneller Statuswechsel.
+- ✏️ **[13. Buchung bearbeiten & Klassifizierungsdetails](screens/13-edit-transaction.md)** — Kategoriebaum, Händlerverknüpfung, Notizen und Regelübernahme.
+- ✂️ **[14. Split-Buchungen mit mehreren Kategorien](screens/14-split-transaction.md)** — Belegaufteilung auf mehrere Kategorien mit Nullsummen-Ausgleich.
+- ⚡ **[15. Sammelabstimmung & Stapelaktionen](screens/15-batch-actions.md)** — Mehrfachauswahl, gesammeltes Verbuchen und Massenabstimmung.
 
-### 🏷️ 4. Kategorien, Budget & Regeln (Batch 4)
-- 🌳 **15. Kategoriehierarchie & Baumstruktur** — Einnahmen- und Ausgabenstrukturen.
-- 🎨 **16. Kategorie erstellen & bearbeiten** — Farbcodes und Symbolauswahl.
-- ⚡ **17. Automatische Regel-Engine** — Bedingungen und Aktionen zur Autokategorisierung.
-- 🔄 **18. Wiederkehrende Buchungen & Rechnungen** — Geplante Gehälter und Fixkosten.
-- 🏪 **19. Zahlungsempfänger- & Händlernormalisierung** — Bereinigung von Buchungstexten.
+### 🏷️ 4. Kategorien, Budget & Regeln (Batch 4 — Abgeschlossen)
+- 🌳 **[16. Kategoriehierarchie & Baumansicht](screens/16-categories.md)** — Einnahmen- und Ausgabenstrukturen, Gruppen auf-/zuklappen, Farbsymbole.
+- 🎨 **[17. Kategorien erstellen & bearbeiten](screens/17-create-category.md)** — Farbcodes, Symbole, mehrsprachige Übersetzungen und Gruppenzuordnung.
+- ⚡ **[18. Automatische Regel-Engine](screens/18-rules-engine.md)** — Bedingungen zur Autokategorisierung, Platzhalter und Live-Test mit Auszugstext.
+- 🔄 **[19. Wiederkehrende Buchungen & Rechnungen](screens/19-recurring-transactions.md)** — Geplante Rechnungen, frei verfügbares Restbudget und Monatsverfolgung.
 
-### 📥 5. Bankimporte & Delimitierte Daten (Batch 5)
-- 📂 **20. Kontoauszug-Import (OFX / CSV)** — Datei-Upload und Duplikaterkennung.
-- ⚙️ **21. CSV-Importprofil-Generator** — Spaltenzuordnung, Datumsformate und Vorzeichenlogik.
+### 📥 5. Bankimporte & Delimitierte Daten (Batch 5 — Abgeschlossen)
+- 📂 **[20. Kontoauszug-Import (OFX / CSV)](screens/20-statement-imports.md)** — Datei-Upload, automatische Kontozuordnung und Duplikatvermeidung.
+- ⚙️ **[21. CSV-Importprofil-Generator](screens/21-import-mapping.md)** — Spaltenzuordnung, Datumsformate, Trennzeichen und Vorzeichenlogik.
 
-### 📈 6. Berichte, Analysen & Überwachung (Batch 6)
-- 📊 **22. Finanzberichte & Diagramme** — Ausgabenaufschlüsselung und Trends.
-- 🎨 **23. Erscheinungsbild & Designeinstellungen** — Schriftarten, Skalierung, Dunkel-/Hellmodus.
-- 🖥️ **24. Windows Tray Launcher & Backups** — Taskleisten-Supervisor, Datensicherungen und Aufbewahrung.
+### 📈 6. Berichte, Analysen & Überwachung (Batch 6 — Abgeschlossen)
+- 📊 **[22. Finanzberichte & Diagramme](screens/22-financial-reports.md)** — Visuelle Ausgabenaufschlüsselung nach Kategorie, größte Ausgaben und interaktive Pivot-Tabellen.
+- 🎨 **[23. Erscheinungsbild & Designeinstellungen](screens/23-appearance-settings.md)** — Eigene Schriftarten, Skalierung und kompakte/komfortable Journaldichte.
+- 🖥️ **[24. Windows Tray Launcher & Backups](screens/24-backups-supervision.md)** — Taskleisten-Supervisor, automatische Schnappschüsse und Wiederherstellung per Klick.
+- 🔗 **[25. Manuelle Buchungen abgleichen](screens/25-manual-reconciliation.md)** — Von Hand erfasste Buchungen mit importierten Buchungen paaren und zusammenführen.
