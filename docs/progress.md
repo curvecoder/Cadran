@@ -182,3 +182,10 @@ Remédier aux écarts relevés par l'audit du 29/10/2026 aux 17 règles d'or, pa
 - Le CS9107 interdit de capturer `timeProvider` dans une classe dérivée qui le passe aussi à la base : passer par un membre protégé de la base.
 - **Lenteur E2E non expliquée** : la suite a pris 18 min 23 s (≈ 5 min nominal) alors que tous les tests passent. À analyser (durée par test dans le journal TRX).
 - **Reste à faire** : release **1.3.4** (PATCH : 2 `fix:`, 1 `test:`) ; notes « What's New » du script déjà à jour ; tag annoté `v1.3.4`, `scripts/package-release.ps1`, `scripts/publish-github-release.ps1 -Tag v1.3.4` et `git push`, chacun sur accord de l'utilisateur.
+
+### Passation du 01/11/2026 (release 1.3.4 publiée)
+- **État** : `main` et le tag `v1.3.4` (sur `1c1ccf9`) sont poussés ; la Release GitHub porte le zip Windows, le tar.gz Linux et `SHA256SUMS.txt`. `verify.ps1` : 38 + 783 + 56 E2E verts, QUALITY GATE PASSED. L'utilisateur a confirmé sous Linux que la boucle d'URL sur base verrouillée a disparu et que la déconnexion fonctionne. Seul fichier non suivi : `Cadran.Launcher/Properties/` (ne jamais l'ajouter).
+- **Reste à faire** :
+  1. **Lenteur E2E non expliquée** : la suite a pris 18 min 23 s (≈ 5 min nominal) alors que tout passe. Pistes : durée par test dans un journal TRX, `WaitForSelectorAsync` qui attend son délai maximal, base `tests/Ledger.Tests.E2E/bin/Release/net9.0/data/cadran.db` partagée qui grossit (un utilisateur par test), `CategorySeedService.LoadCategoryTranslationsAsync` qui charge les traductions de tous les utilisateurs puis filtre en mémoire.
+  2. Facultatif : captures de `/Accounts/Reconcile` pour la documentation ; amorçages E2E ou tests qui dépendent encore de `DateTime.Today` (un 1er du mois les révèle).
+- **Points d'attention** : le CS9107 interdit de capturer `timeProvider` dans une classe dérivée qui le passe aussi à la base (utiliser `LocalToday` de `TransactionOperationsPageModelBase`). Ne pas modifier de fichier pendant `verify.ps1` (≈ 8 min nominal). Ne rien pousser, taguer ni publier sans accord ; aucun nom de domaine privé ni IP interne dans le dépôt (hook `pre-push`).
