@@ -1,217 +1,30 @@
-# Progression — Assainissement Fluxa selon la charte (lot 1 : harnais qualité)
-Mis à jour : 30/10/2026 (lot 1e : constructeur de MainLauncherForm refondu, MA0051 activé, corrections de revue et verify.ps1 restants ; asset Windows autonome de la release 1.2.1 retiré)
+# Progression — Fluxa (Cadran)
+Mis à jour : 01/11/2026. Note condensée : le détail des lots passés est dans `git log` (commits `1c88870` à `645f18b`).
 
-## Objectif
-Remédier aux écarts relevés par l'audit du 29/10/2026 aux 17 règles d'or, par lots prioritaires ; le lot 1 réactive les contrôles du harnais qualité.
+## État
+- `main` poussé jusqu'à `645f18b` ; dernier tag publié `v1.3.5`. Depuis : un `docs:` (guides allemands 12 à 25) et un `perf:` (filtre SQL de `CategorySeedService.LoadCategoryTranslationsAsync`).
+- `verify.ps1` : 38 + 784 + 58 E2E verts, QUALITY GATE PASSED. Aucune fiche de délégation ouverte.
+- **Reste à faire** : rien. Release 1.3.6 (PATCH) possible sur accord de l'utilisateur (`/github-release`) ; ni tag, ni push, ni publication sans accord.
 
-## Décisions prises
-- 30/10/2026 : aucun `git push`, tag ni publication GitHub sans accord explicite de l'utilisateur. Le constructeur de `MainLauncherForm` est refondu proprement (pas d'exclusion MA0051 de `Cadran.Launcher/UI/**`).
-- 30/10/2026 : l'utilisateur confie à Claude les fiches restantes d'Antigravity (04, puis 1e / lot 5). Elles s'exécutent ici, toujours sur une branche `tache/<sujet>` par fiche, avec `verify.ps1` avant fusion.
-- Lot 1 traité par Claude ; lots 2, 3, 4 et 6 délégués à Antigravity via `handoff/` (fiche 01 faite ; fiches 05 et 06 ajoutées pour 1c et 1d ; fiches 02 à 04, index `handoff/2026-10-29-00-liste-antigravity.md`), à exécuter une par une après la fin du lot 1. Lot 5 (découpage des méthodes longues) par Claude.
-- L'utilisateur a choisi le 29/10/2026 d'activer **les quatre groupes** de règles : SonarAnalyzer partout, culture et comparaisons, MA0051, MA0004.
-- MA0004 : à activer en production uniquement ; exclusion documentée pour `tests/**` car xUnit1030 interdit `ConfigureAwait(false)` dans les méthodes de test (confirmé par l'utilisateur le 30/10/2026).
-- MA0051 (lot 1e) : `tests/**` exclu comme pour MA0004 (décision du 30/10/2026) ; seuils par défaut conservés (60 lignes / 40 instructions) ; ordre : `OnModelCreating`, `ImportStatementAsync`, puis les autres. Découpage par composants métier nommés (Règle 4), tests de caractérisation écrits avant chaque extraction.
-- Asset Windows autonome (`Cadran-X.Y.Z-win-x64.exe`) abandonné le 30/10/2026 : ce n'était que le lanceur, qui cherche `app/Cadran.exe` ou `Cadran.exe` à côté de lui. Le zip est la seule distribution Windows.
+## Acquis majeurs (résumé)
+- Harnais qualité complet (lot 1) : SonarAnalyzer partout, règles de culture/comparaison, MA0004 (sauf `tests/**`), MA0051 (sauf `tests/**` ; `OnModelCreating` et les longues méthodes découpées en composants métier), scans masquage / `!` / recopies.
+- Assainissement des règles d'or : constructeurs primaires, annulation et catch typés, `TimeProvider` injecté, E2E de chargement des pages (15 sur 17 ; `UnlockDatabase` et `LoginWith2fa` écartées et justifiées).
+- Fonctionnalité saisie manuelle et rapprochement (lots 1 à 7) : `TransactionOrigin`, `ManualTransactionService`, `ManualEntryMatchFinder`/`Loader`, `ManualEntryMerger`, page `/Accounts/Reconcile`, badge à l'import, guide 25.
+- Correctifs 1.3.x : verrou de migration orphelin, `--urls` prioritaire, cookie de langue en HTTP, déconnexion (POST seul, reverrouillage de la base), boucle d'URL sur base verrouillée (`/Error`, validation du cookie), fixture E2E qui écrivait dans `bin/.../data/cadran.db` (corrigée par `UseSetting`, gardée par `TestDatabaseIsolationTests` ; si un dossier `data/` réapparaît dans `bin`, la régression est là).
+- Distribution : zip Windows et tar.gz Linux seulement (pas d'exe ni de binaire Linux autonomes).
 
-## Fait
-- `.gitignore` (CLAUDE.md, handoff/) — commit `1c88870`.
-- 1a. `SonarAnalyzer.CSharp` déplacé de `Ledger/Ledger.csproj` vers `Directory.Build.props` ; 263 diagnostics corrigés (S6562, S8969, S3881, S6966, S1481, S2325, S3878, S2737…) — commit `e4e93e7`, `verify.ps1` : 613 tests unitaires + 31 E2E verts, QUALITY GATE PASSED.
-- Captures `docs/images/screens/*.png` commitées par erreur, restaurées — commit `228c500`.
-- Fiche 01 (constructeurs primaires) livrée par Antigravity, relue contre la fiche et fusionnée en avance rapide dans `main` — commits `3742f4d`, `63da552`.
-- 1b. Regex `!` élargie et épinglée par deux `[Theory]` (rouge prouvé : 6 cas non détectés) ; scans masquage, `!` et recopies étendus à `Cadran.Launcher/` ; aucune violation applicative — commit `5fb4792`, `verify.ps1` : 594 + 31 + 31 E2E verts, QUALITY GATE PASSED.
-- 1c. Fiche 05 livrée par Antigravity : 11 règles de culture/comparaison à `warning`, 285 diagnostics corrigés ; relue (aucune comparaison `StringComparison` dans une requête traduite en SQL), `verify.ps1` relancé : PASSED ; fusionnée en avance rapide — commit `7fe30fe`. Effets mineurs acceptés : `RecurringExpenseService.DetectCandidatesAsync` met en minuscules en mémoire (`ToLowerInvariant`, accents compris) au lieu de SQLite `lower()` ; `CreateOrEdit.ExistingTranslations` en `OrdinalIgnoreCase` (le dictionnaire désérialisé garde le comparateur par défaut).
-- 1d. Fiche 06 livrée par Antigravity (son message la nomme à tort « fiche 2 ») : MA0004 à `warning` dans `[*.cs]`, `none` dans `[tests/**.cs]` ; 344 diagnostics → 0 ; `MainLauncherForm` laissé sans `ConfigureAwait` ; relue, `verify.ps1` relancé : 31 + 594 + 31 E2E verts, PASSED ; fusionnée en avance rapide — commit `b457cf3`. Écart mineur non corrigé : `.editorconfig` sans saut de ligne final.
-- Fiche 02 (annulation et catch) livrée par Antigravity : captures des services async filtrées (`when (ex is not OperationCanceledException)`) ou typées (`ArgumentException` pour les regex), 8 tests d'annulation, 7 catch nus des tests passés en `catch (IOException)` commenté ; `ApplyRulesToTransactionsAsync` vérifie l'annulation à chaque transaction ; relue, `verify.ps1` relancé : 31 + 602 + 31 E2E verts, PASSED ; fusionnée en avance rapide — commit `b4c224b`.
-- Fiche 03 (TimeProvider) livrée par Antigravity (`f154c4d`, `a8ead1f`) : `TimeProvider` injecté dans 7 services, 3 PageModels, `DatabaseReferenceDataSeeder`, `AppDbContext` (paramètre optionnel) et les 2 superviseurs du lanceur ; 12 tests `FakeTimeProvider`. Corrections de revue par Claude (`e376ada`) : retour au comportement d'origine d'`AppDbContext.SaveChangesAsync` (écrase `UpdatedAtUtc` de toute entité modifiée ; Antigravity l'avait conditionné à `!IsModified`), les tests Merchant et Split partagent leur `FakeTimeProvider` avec le contexte, `AppDbContextTests` épingle l'horloge injectée (rouge prouvé par mutation), package de test figé en `9.10.0`. Sans test à date fixe, justifiés : `Details`/`Transactions` (relais vers `TransactionOperationsPageModelBase`, couvert par `TransactionsSplitTests`), `DatabaseInitializer` (résout `TimeProvider` depuis le conteneur, le seeder est couvert par `CompleteDatabaseInitializationTests`). `verify.ps1` : 33 + 613 + 31 E2E verts, PASSED. Constat : `BaseEntity.CreatedAtUtc` est initialisé à `DateTime.UtcNow`, donc la branche `Added` de `SaveChangesAsync` ne s'applique jamais ; initialiseurs d'entités hors périmètre.
-- Fiche 04 (E2E de chargement) exécutée par Claude : 15 pages sur 17 couvertes (POM `GetByRole` + `Expect`, base `AuthenticatedE2ETestBase`, `AccountsListPage`), rouge prouvé puis vert ; fusionnée avec merge commit `ce27a97` (branche `tache/e2e-pages-manquantes`, commit `efa6840`). Écartées et justifiées : `UnlockDatabase` (état verrouillé forçable seulement via `IDatabaseKeyHolder`) et `LoginWith2fa` (exige un code TOTP calculé). Compte rendu : `handoff/2026-10-29-04-e2e-pages-manquantes.report.md`.
-- Générateurs `DocumentationScreenshot*GeneratorTests.cs` : écrivent uniquement dans `%TEMP%\cadran-doc-screenshots` (`ProjectDocsDir` supprimé) — commit `f4e560d`. Les images de `docs/images/screens` ne se rafraîchissent plus seules : copier à la main depuis ce dossier.  
-- `/Error` : `Error.cshtml` en `@page "/Error"` (la route était `/Pages/Error` à cause de `RootDirectory = "/"`, donc `UseExceptionHandler("/Error")` renvoyait 404) ; test rouge (404) puis vert — commit `21c7827`. `Pages/Privacy` reste en `/Pages/Privacy`. `verify.ps1` : PASSED.
-
-- 1e (en cours, branche `tache/ma0051-model-configurations`, **non fusionnée**, issue de `main` à `21c7827`) :
-  - `735a99a` : `OnModelCreating` (~248 lignes) devient 17 `IEntityTypeConfiguration<T>` dans `Ledger/Infrastructure/Data/Configurations/`, appliquées par `ApplyConfigurationsFromAssembly` ; `dotnet ef migrations has-pending-model-changes` : aucun changement.
-  - `c9bf0f0` : 11 tests de caractérisation d'`ImportStatementAsync` (compte introuvable ou choisi, appariement OFX sans séparateurs, doublons suspectés base et fichier, doublon par référence, 3 statuts, échec du parseur), verts sur l'ancien code.
-  - `70186c2` : `ImportStatementAsync` (~307 → ~50 lignes) découpé en `ImportAccountResolver`, `ImportDuplicateDetector`, `ImportTransactionScreener`, `ImportedTransactionFactory` (réutilisée par `ConfirmDuplicatesAsync`), `ImportResultFactory` ; construits dans les champs du service, constructeur et DI inchangés. 624 tests unitaires verts, build propre, `dotnet format` propre. `verify.ps1` complet **non lancé** sur cette branche.
-  - `85b6a2a` : `AggregateByCategory` (~287 lignes) découpé en `CategoryPlacementResolver`, `CategoryPivotTree`, `PivotRowFactory` (+ tests `AggregateRows_*`, `2447d00` pour les suivants).
-  - `2447d00` + `c7f41e5` : `DetectCandidatesAsync` (~216 lignes) découpé en `IssuerTransactionGrouper`, `RecurrenceCadenceClassifier`, `RecurringCandidateDetector` ; 6 tests de caractérisation ajoutés (verts avant extraction).
-  - `6a79ac7` : `RestoreDefaultCategoriesAsync` (~200 lignes) découpé en `DefaultCategoryRestorePlan` et `CategoryTemplateMatcher` (déplacé du service, aussi utilisé par `EnsureMissingTranslationsAsync`) ; 1 test de caractérisation ajouté (traductions perdues).
-  - `98b76f2` (tests `c`) : `OnPostUpdateCategoryAsync` découpé en `TransactionStatusApplier` et `CategoryUpdateResponseFactory` (+ `ResolveTargetMerchantIdAsync` dans le PageModel) ; 6 tests de caractérisation (charge utile JSON, libellés similaires, statut personnalisé, effacement du commerçant).
-  - `59866dc` : `FindExistingDuplicatesAsync` délègue à `ExistingDuplicateDetector` ; 3 tests négatifs/ordre ajoutés.
-- Release 1.2.1 : asset `Cadran-1.2.1-win-x64.exe` supprimé de GitHub ; notes de la release corrigées (ligne du tableau, somme, clôture Markdown du bloc de checksums). Scripts corrigés sur la branche `tache/retrait-exe-autonome` (`f78408f`, **non fusionnée**, issue de `main`) : `package-release.ps1` ne crée plus l'exe, `publish-github-release.ps1` ne le liste plus et construit la clôture Markdown par une variable (le backtick était interprété comme tabulation).
-
-## Reste à faire (dans l'ordre)
-_Mis à jour le 01/11/2026 : guides allemands 12 à 25 (`d720ae6`) et filtre SQL de `CategorySeedService.LoadCategoryTranslationsAsync` faits ; plus rien à faire. `verify.ps1` : QUALITY GATE PASSED._
+## Décisions
+- Aucun `git push`, tag ni publication GitHub sans accord explicite.
+- MA0004 et MA0051 exclus pour `tests/**` (xUnit1030 interdit `ConfigureAwait(false)` dans les tests).
+- Documentation : `docs/` en anglais avec `docs/fr/`, `docs/de/` (guides 1 à 25 complets), `README.*` en, fr, es, de.
 
 ## Points d'attention
-- `./verify.ps1` se lance avec `powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./verify.ps1` (pas de `pwsh`) ; durée ≈ 6 min, dont 5 min d'E2E.
-- Sortie du build en français avec espaces insécables (« Argument 4 : ») : en tenir compte dans les regex de filtrage.
-- Les fichiers source mêlent LF et CRLF ; un script d'édition doit conserver la fin de ligne de chaque fichier.
-- Branche courante de la session : `tache/retrait-exe-autonome` ; la branche de travail 1e est `tache/ma0051-model-configurations` (y revenir avec `git switch` avant de poursuivre MA0051).
-- Scripts d'édition Python : un heredoc contenant des apostrophes ou du C# casse le shell Bash de l'outil ; écrire le script et le contenu avec l'outil `Write` (dossier scratchpad), puis lancer `python -I <script>`. Conserver CRLF/LF par fichier.
-- Un champ initialisé dans une classe à constructeur primaire ne peut pas référencer un autre champ d'instance (CS0236) : passer par les paramètres du constructeur.
-- Le jeton Sonar (`.sonar-token`) est un jeton d'analyse : l'API `measures/component_tree` est refusée (« Insufficient privileges ») ; les mesures globales et `issues/search` fonctionnent.
-
-## Reprise (note de passation du 31/10/2026)
-État : `main` contient deux commits **non poussés** (`4f27cdc` tri des comptes du tableau de bord par nom ; `affcf9e` feuille de route et cette note). Le tag `v1.2.2` est posé, poussé et publié en Release ; le correctif de tri est postérieur et ne fait pas partie de cette release. `verify.ps1` sur ces commits : QUALITY GATE PASSED (30/10/2026). Dépôts GitHub déjà tous publics. Un dossier vide `Cadran.Launcher/Properties/PublishProfiles/` non suivi traîne (produit par la publication, à ignorer ou supprimer).
-
-### Reste à faire
-1. Sur accord : `git push origin main` (deux commits). Pas de nouvelle release pour l'instant (un seul `fix:` depuis `v1.2.2`).
-2. **Saisie manuelle d'opérations et rapprochement** (voir la ligne dédiée de `Ledger/Feuille de Route…md`, Should have). Demande de l'utilisateur : saisir des opérations à la main (aujourd'hui seules celles importées existent), les repérer facilement dans le registre, puis les rapprocher des opérations importées ensuite et les fusionner en ne gardant que les importées.
-   - Constats dans le code : `Transaction` (`Ledger/Features/Accounts/Entities/Transaction.cs`) n'a aucun champ d'origine, seulement `ImportBatchId` ; aucun handler de création d'opération dans `Features/Accounts/Pages` (édition, ventilation, suppression seulement) ; `Features/Imports/Services/ExistingDuplicateDetector.cs` compare déjà montant, type, dates proches et libellés (`StatementLabelAnalyzer`) et peut inspirer les paires de rapprochement ; `TransactionStatus.Reconciled` existe déjà : éviter la confusion dans l'interface (parler de « fusion »).
-   - **Trois décisions en attente** (question posée, l'utilisateur n'a pas répondu et a changé de session) : a) marquage de l'origine : nouvelle colonne enum Import/Manuelle avec migration et filtre (recommandé) ou déduction par `ImportBatchId` nul ; b) rapprochement : écran dédié plus signalement à l'import (recommandé) ou écran seul ; c) fusion : compléter les champs vides de l'importée (recommandé) ou tout reprendre de la saisie. Les reposer avec `AskUserQuestion` avant de coder, puis plan en lots, TDD (Règle 15) et E2E Playwright (Règle 13) ; localisation en, fr, es, de.
-3. Facultatif : captures de documentation. La régénération ne produit que du bruit d'ordre des comptes ; maintenant que le tri est déterministe, elle devient exploitable : relancer `dotnet test tests/Ledger.Tests.E2E --filter DocumentationScreenshot` puis `scripts/refresh-doc-screenshots.ps1` (corrigé) et comparer avant de commiter. Six captures (connexion, supervision des sauvegardes) ne sont pas régénérées par ce filtre.
-
-### Points d'attention
-- Voir « Points d'attention » plus haut (commande `verify.ps1`, fins de ligne).
-- Scripts d'édition : écrire le script avec `Write` plutôt qu'en heredoc, les échappements `\n` et `\U` y sont altérés par le shell de l'outil.
-- Il ne reste aucune fiche de délégation ouverte ; le lot 5 est absorbé par MA0051.
-
-### Mise à jour du 31/10/2026 (suite de la reprise)
-- `git push origin main` fait (`e9f6826` en tête). Reste local : le dossier non suivi `Cadran.Launcher/Properties/`.
-- Décisions saisie manuelle prises par l'utilisateur : a) colonne enum d'origine (Import/Manuelle) avec migration et filtre ; b) écran de rapprochement dédié plus signalement à l'import ; c) fusion qui complète les champs vides de l'opération importée (l'importée prévaut).
-- Plan en lots (TDD, E2E, en/fr/es/de) : L1 enum `TransactionOrigin` + migration + filtre/badge dans le registre ; L2 création manuelle (service + modale + handler) ; L3 `ManualEntryMatchFinder` (paires candidates, inspiré d'`ExistingDuplicateDetector`) ; L4 `ManualEntryMerger` (fusion, suppression de la saisie) ; L5 écran de rapprochement ; L6 signalement à l'import ; L7 E2E, docs et captures. Plan à valider par l'utilisateur avant L1.
-
-### Passation du 31/10/2026 (lot 1 de la saisie manuelle)
-- Plan validé par l'utilisateur (7 lots, voir plus haut). **Lot 1 écrit, non commité** (arbre de travail sur `main`) : enum `TransactionOrigin` (Import = 0, Manual = 1) dans `TransactionEnums.cs`, propriété `Transaction.Origin`, migration `AddTransactionOrigin` (colonne INTEGER défaut 0), filtre `Origin` dans `TransactionOperationsPageModelBase` (propriété, `HasBaseActiveFilters`, `BaseFilterCriteriaCount`, `ApplyCommonTransactionFiltersAsync`), liste « Origine » et badge `data-testid="tx-origin-manual-<id>"` dans `Transactions.cshtml`, clés `Accounts.Origin`, `OriginAll`, `OriginImport`, `OriginManual` en en/fr/es/de. 2 tests dans `TransactionsPageFilteringTests` (rouge prouvé, puis vert) ; 706 tests unitaires verts ; `has-pending-model-changes` : aucun changement.
-- **À faire pour clore le lot 1** : lire le résultat de `verify.ps1` (lancé en arrière-plan, journal `verify4.log` du scratchpad, Sonar UP), exiger QUALITY GATE PASSED, puis commit `feat:` (fichiers du lot seulement ; ne pas ajouter `Cadran.Launcher/Properties/`). Pas de test E2E du badge/filtre avant le lot 7.
-- **Incident E2E** : un `cadran.db` de 110 Mo dans `tests/Ledger.Tests.E2E/bin/Release/net9.0/data/` figeait le démarrage (100 % CPU dans `CategorySeedService.LoadCategoryTranslationsAsync`, qui charge toutes les traductions `Category` puis filtre en mémoire). Supprimé (artefact ignoré par Git), E2E revenus à 3 s. Origine du gonflement non établie : hypothèse de traductions de catégories ajoutées en double à chaque démarrage, donc risque aussi en production. **Vérification en cours** : démarrer deux fois l'application sur une base neuve et comparer le nombre de lignes de `EntityTranslations` ; si le compte augmente, corriger (test rouge d'abord) avant les lots suivants.
-- Pour diagnostiquer un blocage : `dotnet-stack report -p <pid du testhost>` (outil global installé).
-- La base de test partagée `bin/.../data/cadran.db` n'est pas celle de la fixture (`%TEMP%\cadran_e2e_<guid>.db`, absente au moment du blocage) : comprendre quel test ou quel chemin écrit dans `data/cadran.db`.
-
-### Mise à jour du 31/10/2026 (fin de session)
-- **Lot 1 clos** : commit `3da38ad`, `verify.ps1` complet : 38 + 706 + 52 E2E verts, QUALITY GATE PASSED. Prochaine étape : **lot 2** (création manuelle : service, modale, handler ; `Origin = Manual`).
-- **Doublons de traductions : écartés.** Base `tests/Ledger.Tests.E2E/bin/Release/net9.0/data/cadran.db` après une suite E2E complète : 5,9 Mo, 26 utilisateurs, 115 catégories chacun, 12 353 traductions, **0 doublon** (groupement par type, entité, langue, champ). Les tests d'idempotence de `CategorySeedService` existent déjà. Le gonflement vient de l'accumulation d'un utilisateur par test dans cette base partagée (à comprendre : la fixture vise `%TEMP%`, mais ce fichier est écrit).
-- **Risque résiduel, faible** : `CategorySeedService.LoadCategoryTranslationsAsync` charge les traductions `Category` de **tous** les utilisateurs puis filtre en mémoire, pour chaque utilisateur amorcé au démarrage (coût quadratique en nombre d'utilisateurs). Sans effet pour une base mono-utilisateur ; filtre SQL sur les identifiants de catégories possible si besoin.
-
-
-### Lot 2 de la saisie manuelle (31/10/2026)
-- Créé : `ManualTransactionService` (`Features/Accounts/Services`, enregistré en scoped) avec `ManualTransactionRequest`, `ManualTransactionResult` et `ManualTransactionError` ; validation libellé requis, montant > 0, date renseignée, type Débit/Crédit, compte existant ; statut `Cleared` (ou `Pending` si la date est postérieure à aujourd'hui, via `TimeProvider`) ; `Origin = Manual`. `ManualAmountParser` accepte point ou virgule et espaces de regroupement.
-- Handler `OnPostCreateTransactionAsync` dans `TransactionsModel` (service reçu par `[FromServices]` pour ne pas changer le constructeur des PageModels ni leurs tests ; formulaire `manual.*` ; PRG vers le referer). Le résultat passe par `TempData["ManualEntryResult"]` sous forme de clé, localisée par la vue (`Accounts.ManualEntryResult_*`). `RedirectToRefererOrDefault` et `TodayInputValue` sont portés par la classe de base.
-- Vue : bouton `manual-entry-open`, alerte `manual-entry-result`, partielle `_ManualEntryModal.cshtml`. 19 clés `Accounts.ManualEntry*` dans en/fr/es/de.
-- Tests : 15 (`ManualTransactionServiceTests`) + 7 (`TransactionsCreateManualTests`), rouge prouvé par assertions avant le code ; E2E `ManualEntryModal_WhenDebitIsSubmitted_ShowsOperationWithManualBadge` (écrit après l'IHM, donc sans rouge préalable).
-- Prochaine étape : **lot 3** (`ManualEntryMatchFinder`).
-
-### Passation du 31/10/2026 (fin du lot 2, commit en attente)
-- **État** : lot 2 écrit, **non commité** (arbre de travail sur `main`). Fichiers : `ManualTransactionService.cs`, `ManualAmountParser.cs`, `_ManualEntryModal.cshtml`, `Transactions.cshtml(.cs)`, `TransactionOperationsPageModelBase.cs`, `Program.cs`, 4 locales, 2 fichiers de tests unitaires, `TransactionsPage.cs` et `TransactionsPageTests.cs` (E2E), cette note. Ne pas ajouter `Cadran.Launcher/Properties/`.
-- **verify.ps1** : 1er passage en échec (`Codebase_ShouldNotContain_NullForgivingOperators`, `request.Label!` dans le service) ; corrigé par `Validate(request, out var label)` ; 729 tests unitaires verts. 2e passage lancé, journal `verify2.log` du scratchpad : **à lire** (exiger 0 échec et QUALITY GATE PASSED ; ne pas l'annoncer sans l'avoir lu), puis commit `feat:` avec le pied `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`. Sonar répondait (UP).
-- **Fins de ligne** : dépôt en LF (`core.autocrlf=true`). `Transactions.cshtml` était en CRLF avec BOM et git le voyait comme non texte (diff de tout le fichier) : converti en LF, diff réduit à 13 lignes. Les fichiers créés sont en LF. `grep $'\r'` est trompeur dans cet environnement : utiliser `od -c` ou `git diff --numstat`.
-- **Écart de méthode** : le test E2E a été écrit après l'IHM (aucun rouge préalable possible sans la modale) ; les tests unitaires ont un rouge prouvé.
-- **Lot 3** : `ManualEntryMatchFinder` (paires opération manuelle / importée), à inspirer de `Features/Imports/Services/ExistingDuplicateDetector.cs`. Python n'est pas installé : éditer avec `sed` ou l'outil Edit.
-
-### Lot 3 de la saisie manuelle (31/10/2026)
-- `ManualEntryMatchFinder` (`Features/Accounts/Services`, statique, sans accès base) et `ManualEntryMatch` : paire si compte, type et montant identiques et écart de dates ≤ tolérance ; appariement un-pour-un, meilleures paires d'abord (écart de dates, puis mots communs), le libellé ne sert qu'à départager. 12 tests (rouge prouvé : 8 échecs). `verify.ps1` : 38 + 741 + 53 E2E verts, QUALITY GATE PASSED.
-- Prochaine étape : **lot 4** (`ManualEntryMerger` : compléter les champs vides de l'importée, l'importée prévaut, supprimer la saisie ; le chargement des candidats et la tolérance viendront de `GetDuplicateToleranceDaysAsync`).
-
-### Lot 4 de la saisie manuelle (31/10/2026)
-- `ManualEntryMerger` (`Features/Accounts/Services`, scoped) : `MergeAsync(manualId, importedId)` renvoie `ManualEntryMergeResult` (`Merged`, `NotFound`, `NotManual`, `NotImported`, `Incompatible` ; rien n'est modifié en cas de refus). L'importée prévaut ; elle reçoit catégorie, marchand, date budgétaire, statut personnalisé et notes seulement s'ils sont vides. Ventilation de la saisie reportée sur l'importée si celle-ci n'en a pas, sinon supprimée. La saisie est supprimée. 11 tests (rouge prouvé : 9 échecs). `verify.ps1` : 38 + 752 + 53 E2E verts, QUALITY GATE PASSED.
-- Prochaine étape : **lot 5** (écran de rapprochement : liste des paires de `ManualEntryMatchFinder`, tolérance via `GetDuplicateToleranceDaysAsync`, action de fusion par `ManualEntryMerger`, localisation en/fr/es/de, E2E au lot 7).
-
-### Lots 5 à 7 de la saisie manuelle (31/10/2026)
-- Lot 5 (`b56ba7e`) : `ManualEntryMatchLoader` (paires via la tolérance de doublons), page `/Accounts/Reconcile` (`ReconcileModel`, action Fusionner via `ManualEntryMerger`), lien depuis le registre, clés `Accounts.Reconcile*` en en/fr/es/de. Rouge du chargeur prouvé par échec de compilation ; la page n'a pas eu de test rouge préalable.
-- Lot 6 : `IndexModel` des imports reçoit `ManualEntryMatchLoader?` (paramètre optionnel final) et expose `PendingManualMatchCount` après un import réussi ; badge `import-manual-matches` vers l'écran de rapprochement ; clé `Imports.ManualMatchesBadge` x4. Rouge prouvé (compilation).
-- Lot 7 : E2E `ReconcilePageTests` (état vide, fusion avec opération importée amorcée en base) et `ReconcilePage` ; section 2.5 des guides en/fr/de/es ; feuille de route passée à « Existe ».
-- `verify.ps1` : 38 + 763 + 55 E2E verts, QUALITY GATE PASSED.
-- Reste : captures de documentation (facultatif, non fait) ; `git push` non fait (sur accord). Pas de release : plusieurs `feat:` depuis `v1.2.2`, donc MINOR (1.3.0) à proposer à l'utilisateur.
-
-### Passation du 31/10/2026 (fin de la saisie manuelle)
-- **État** : `main` poussé jusqu'à `6106ebe` (lots 5 à 7 de la saisie manuelle, `verify.ps1` : 38 + 763 + 55 E2E verts, Quality Gate PASSED). Un commit **non poussé** : `03f21b3` (`fix:` MA0002, `StringComparer.Ordinal` dans `UiSettingsService`, lignes 119 et 147 ; le build en ligne de commande passait déjà, l'erreur venait de l'IDE, compilation confirmée par l'utilisateur). Seul fichier non suivi : `Cadran.Launcher/Properties/` (ne pas l'ajouter).
-- **Reste à faire** :
-  1. Sur accord : `git push origin main` (commit `03f21b3`).
-  2. Release : plusieurs `feat:` depuis `v1.2.2` ⇒ proposer **1.3.0** (MINOR) avec la liste des commits (`git log v1.2.2..HEAD --oneline`) ; ne poser ni pousser le tag, ni publier, sans accord (skill `github-release`).
-  3. Facultatif : captures de documentation (`dotnet test tests/Ledger.Tests.E2E --filter DocumentationScreenshot`, puis `scripts/refresh-doc-screenshots.ps1`, comparer avant de commiter). Ajouter si voulu des captures de l'écran `/Accounts/Reconcile`.
-- **Écarts à connaître** : `ReconcileModel` écrit sans test rouge préalable (Règle 15) ; rouge du chargeur et du lot 6 prouvé par échec de compilation seulement ; test E2E du lot 2 écrit après l'IHM.
-- **Risque résiduel faible** : `CategorySeedService.LoadCategoryTranslationsAsync` charge les traductions de tous les utilisateurs puis filtre en mémoire (voir plus haut).
-- **Pratique** : `verify.ps1` se lance en arrière-plan (≈ 8 min, E2E ≈ 4,5 min) ; ne pas modifier de fichier pendant son exécution. Le dépôt est en LF (`core.autocrlf=true`), Python absent : éditer avec `sed` ou l'outil Edit.
-
-### Mise à jour du 31/10/2026 (clôture du reste à faire)
-- `git push origin main` fait (`d4377e9`). Captures régénérées : seules celles du registre (`12-*`) sont commitées (`2ef54d1`, bouton « New operation » et filtre Origine) ; les 20 autres ne changeaient que par bruit et ont été restaurées. Pas de capture de `/Accounts/Reconcile` (non ajoutée).
-- **Release 1.3.0 non faite** : la skill `github-release` ne peut être lancée que par l'utilisateur (`/github-release`). Commits depuis `v1.2.2` : 6 `feat:`, aucun breaking ⇒ MINOR 1.3.0 validé. `2ef54d1` reste à pousser.
-
-### Release 1.3.0 (31/10/2026)
-- `verify.ps1` sur `bdcf930` : 38 + 763 + 55 E2E verts, QUALITY GATE PASSED. Tag `v1.3.0` posé et poussé, Release publiée avec le zip Windows, le tar.gz et le binaire Linux, `SHA256SUMS.txt` (aucun `*.db`, `appsettings.Development.json` ni `.sonar-token` dans les archives). Notes « What's New » du script mises à jour. Dépôts déjà publics ; topics réappliqués par le script.
-
-### Passation du 31/10/2026 (fin de session : releases 1.3.0 et 1.3.1, préparation de la 1.3.2)
-- **Objectif** : corriger les incidents de déploiement Linux/Windows remontés par l'utilisateur après la release 1.3.0, sans publier sans son accord.
-- **Publié** : releases `v1.3.0` et `v1.3.1` (GitHub), SqliteForge `v1.1.2` (tag, `main` poussé, package NuGet sur `github-curvecoder`). L'asset Linux autonome `Cadran-X-linux-x64` a été retiré de la 1.3.0 et des scripts : il ne démarre pas sans `wwwroot` ni `Cadran.staticwebassets.endpoints.json`, le tar.gz est la seule distribution Linux.
-- **Corrigé dans la 1.3.1** : verrou de migration EF Core orphelin (`StaleMigrationLockRemover`, > 5 min, appelé par `DatabaseInitializer` avant la synchronisation du schéma ; reproduit sur une copie de `cadran.db.old`, copie supprimée) ; `--urls` / `ASPNETCORE_URLS` priment sur `Server:Port` (`ServerUrlResolver`) ; guide systemd en `Type=simple`.
-- **Commits locaux non poussés, destinés à la 1.3.2** (`verify.ps1` du dernier : 38 + 773 + 55 E2E verts, QUALITY GATE PASSED) : `84abeee` cookie de langue marqué `Secure` seulement sur requête HTTPS (il retombait sur le français en HTTP direct) ; `2adc005` guide : `Environment=XDG_DATA_HOME=/opt/cadran/data` dans l'unité systemd (compte de service sans dossier personnel : `LocalApplicationData` vide, le chemin relatif `Cadran/dbkey.dat` entrait en collision avec l'exécutable `/opt/cadran/Cadran`, d'où l'erreur au déverrouillage) ; passage à `SqliteForge` 1.1.2 (chemin de repli dans le dossier de l'application, échec d'enregistrement de la clé journalisé sans bloquer le déverrouillage).
-- **Reste à faire (dans l'ordre)** :
-  1. Sur accord : `git push origin main`.
-  2. Release **1.3.2** (PATCH : 3 `fix:` et 1 `docs:` depuis `v1.3.1`) : mettre à jour la section « What's New » de `scripts/publish-github-release.ps1`, puis, chacun sur accord, tag annoté `v1.3.2`, `scripts/package-release.ps1`, `scripts/publish-github-release.ps1 -Tag v1.3.2`. Ne rien publier sans accord (skill `github-release`, invocation manuelle `/github-release`).
-  3. Demander à l'utilisateur de confirmer sous Linux : langue qui tient en HTTP direct ; déverrouillage sans page d'erreur avec la 1.3.2 ; installation depuis le tar.gz uniquement.
-- **Points d'attention** : le tag `v1.3.0` pointe sur `bdcf930`, avant les correctifs ; ne pas le déplacer. Un `taskkill` global de `Cadran.exe` est refusé par l'environnement : cibler le processus par chemin (`Get-Process … | Where Path`). Ne jamais ajouter `Cadran.Launcher/Properties/` aux commits. Le mot de passe de la base de l'utilisateur n'est écrit nulle part ; ne pas travailler sur ses bases réelles, seulement sur des copies temporaires supprimées ensuite.
-- **Réseau (hors dépôt)** : l'utilisateur place Cadran derrière Nginx Proxy Manager en accès interne uniquement (LAN et WireGuard) : DNS interne, certificat par challenge DNS, Access List `Interne` (LAN + sous-réseau WireGuard, puis Deny all). Rien à faire côté code.
-
-### Release 1.3.2 (31/10/2026)
-- Commits poussés (`main` à `b4882d6`, après retrait du domaine et des IP internes de cette fiche, exigé par le hook `pre-push`). Tag annoté `v1.3.2` posé et poussé sur `b4882d6`. `verify.ps1` sur ce commit : QUALITY GATE PASSED.
-- Release publiée avec le zip Windows, le tar.gz Linux et `SHA256SUMS.txt` (aucun `*.db`, `appsettings.Development.json` ni `.sonar-token` dans les archives). Notes « What's New » du script mises à jour.
-- **Reste à faire** : l'utilisateur confirme sous Linux avec le tar.gz 1.3.2 que la langue tient en HTTP direct et que le déverrouillage se fait sans page d'erreur.
-- **Point d'attention** : ne jamais écrire dans le dépôt de nom de domaine privé ni d'IP internes (hook `pre-push`).
-
-### Passation du 31/10/2026 (fin de session : release 1.3.3)
-- **Objectif** : corriger la déconnexion remontée par l'utilisateur sous Linux (404 sur `/Security/Logout`, pas de nouvelle demande de connexion, clé de chiffrement jamais redemandée).
-- **Publié** : release `v1.3.3` (tag annoté sur `40e58f4`, zip Windows, tar.gz Linux, `SHA256SUMS.txt`). `verify.ps1` sur `40e58f4` : QUALITY GATE PASSED. La 1.3.2 (`v1.3.2`, `b4882d6`) est aussi publiée.
-- **Corrigé dans la 1.3.3** : la page `Logout` n'avait pas de `Logout.cshtml` (route inexistante depuis l'origine) ; le formulaire de déconnexion de `_Layout.cshtml` n'envoyait pas de jeton antiforgery (`action` explicite), d'où un POST rejeté en 400 ; la déconnexion reverrouille la base quand la clé n'est pas mémorisée (`IDatabaseEncryptionService.LockUnlessRememberedAsync`, qui vide `IDatabaseKeyHolder` seulement si la base est chiffrée et qu'aucune clé n'est sauvegardée). Tests : `ProgramTests`, `DatabaseEncryptionServiceTests`, `SecurityPageModelsTests`, E2E `NavbarComponent_WhenLogoutClicked_EndsSessionAndRequiresNewSignIn`.
-- **Reste à faire** :
-  1. L'utilisateur confirme sous Linux avec le tar.gz 1.3.3 : la déconnexion mène à la page de connexion, la clé est redemandée quand elle n'est pas mémorisée, la langue tient en HTTP direct, le déverrouillage se fait sans page d'erreur.
-  2. Décision ouverte : `GET /Security/Logout` déconnecte aussi (`OnGetAsync`), donc un lien externe peut déconnecter et reverrouiller la base ; à restreindre au POST si l'utilisateur le souhaite.
-- **Points d'attention** : un test E2E qui clique réellement sur une action la révèle mieux qu'un test de PageModel (la déconnexion n'avait jamais été exercée). Ne jamais écrire de nom de domaine privé ni d'IP internes dans le dépôt (le hook `pre-push` bloque). Ne jamais ajouter `Cadran.Launcher/Properties/` aux commits. Ne pas pousser, taguer ni publier sans accord.
-
-### Passation du 01/11/2026 (boucle d'URL sur base verrouillée, déconnexion en POST)
-- **Signalement de l'utilisateur** : en lançant Cadran puis en se connectant tout de suite sur la page ouverte automatiquement, l'URL de `/Security/UnlockDatabase?returnUrl=…` s'allonge sans fin (`returnUrl=%2FError%3FreturnUrl%3D…`) et tout plante avec « file is not a database ».
-- **Diagnostic** : (1) `UseExceptionHandler("/Error")` précède `DatabaseLockMiddleware` ; la ré-exécution vers `/Error` était redirigée vers `UnlockDatabase?returnUrl=/Error…`, qui relevait la même exception, d'où l'imbrication. (2) Cause probable de l'exception : `SecurityStampValidator` (cookie Identity de plus de 30 minutes) interroge la base encore chiffrée et verrouillée. Prouvé en test sur une base non chiffrée avec le drapeau « verrouillé » (requêtes SQL visibles dans le journal) ; **non confirmé sur la base chiffrée réelle de l'utilisateur**.
-- **Correctifs écrits, NON commités** (arbre de travail sur `main`, base `afb8e0d`) :
-  - `Ledger/Infrastructure/Security/DatabaseLockMiddleware.cs` : `/Error` passe sans redirection quand la base est verrouillée. Tests : `InvokeAsync_WhenDatabaseLockedAndAccessingErrorPage_AllowsAccessWithoutRedirect` (3 cas, rouge prouvé) ajoutés à `DatabaseLockMiddlewareTests.cs`.
-  - `Ledger/Program.cs` (`ConfigureApplicationCookie`) : `OnValidatePrincipal` enveloppé, validation sautée tant que la base est chiffrée et verrouillée. Test : `ProgramTests.ApplicationCookie_WhenSessionIsOldAndStampIsStale_SkipsValidationOnlyWhileDatabaseIsLocked` (2 cas, rouge prouvé sur le cas verrouillé, cas témoin vert).
-  - `Ledger/Features/Security/Pages/Logout.cshtml.cs` : `OnGetAsync` redirige vers `/Security/Login` sans déconnecter ; seul le POST déconnecte. Tests : `OnPostLogoutAsync_WhenInvoked_SignsOutAndRedirectsToLogin` resserré, `OnGetAsync_WhenInvoked_RedirectsToLoginWithoutSigningOut` ajouté (rouge prouvé). Seul usage du lien : le formulaire POST de `_Layout.cshtml`.
-- **`verify.ps1` du 01/11/2026 : ÉCHEC, donc rien commité, Sonar non exécuté.** 38 + 766 verts, **13 échecs** dans `Ledger.Tests`, et 1 échec E2E sur 56 (suite à 17 min au lieu de 5).
-  - Les 13 échecs sont **antérieurs à mes changements** (mêmes 13 sur `afb8e0d`, contrôle fait avec `git stash`) : tests dépendants de la date, construits avec `DateTime.Today.AddDays(-n)` alors que les pages filtrent sur le mois courant ; le 1er du mois, les opérations tombent le mois précédent. Classes : `TransactionsPageFilteringTests` (7, dont les deux tests d'origine `WithOriginFilter*` du lot 1), `DetailsModelTests` (5), `ReportServiceBudgetDateTests` (1, `ComputeWidgetDataAsync_KpiIncome_ShouldAccountForShiftedBudgetDate`, attendu 500 reçu 3000). Fixer les dates (par exemple en fixant les opérations dans le mois courant à une date calculée sans franchir le 1er, ou via `TimeProvider` si le code le permet) sans affaiblir les assertions.
-  - E2E : `DocumentationScreenshotLot3GeneratorTests.GenerateLot3Screenshots_WhenExecuted_CapturesAllScreensInEnglish` échoue dans `CaptureBatchActionsScreenAsync` (ligne ~584 du fichier de test) ; cause non analysée, peut être aussi liée à la date. La durée de 17 min est à comprendre (journal : `verify-lock.log` du scratchpad de la session).
-- **Reste à faire (dans l'ordre)** :
-  1. Autre session : rendre les 13 tests indépendants de la date (commit `test:` séparé, Règle 16 : ne rien supprimer ni affaiblir), analyser l'échec E2E et la lenteur.
-  2. `verify.ps1` complet (`powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./verify.ps1`, en arrière-plan, ≈ 8 min nominal), exiger QUALITY GATE PASSED.
-  3. Commits : `fix:` pour `/Error` + validation du cookie, `fix:` pour la déconnexion en POST, `test:` pour les dates ; aucun `git add` de `Cadran.Launcher/Properties/`. Mettre à jour cette note.
-  4. Proposer la release **1.3.4** (PATCH : uniquement des `fix:`) ; ne pas poser ni pousser le tag sans accord (skill `github-release`).
-  5. Demander à l'utilisateur de vérifier sur sa base chiffrée réelle que la boucle a disparu (lancer Cadran avec un ancien cookie, ouvrir la page tout de suite) ; sinon rouvrir le diagnostic de la cause 2.
-- **Écart de méthode** : mon `Write` a écrasé `DatabaseLockMiddlewareTests.cs` (5 tests existants) ; restauré depuis Git puis complété (28 lignes ajoutées, 0 supprimée). Toujours lire un fichier de test avant de l'écrire.
-- **Point d'attention** : le dépôt est en LF avec `core.autocrlf=true` mais certains fichiers de test sont en CRLF (`DatabaseLockMiddlewareTests.cs`) ; conserver la fin de ligne de chaque fichier.
-
-### Mise à jour du 01/11/2026 (correctifs commités, release 1.3.4 en préparation)
-- Commits `0664c03` (`/Error` et validation du cookie sur base verrouillée), `5f3d57c` (déconnexion en POST seul), `1ddfae4` (tests indépendants de l'horloge : `Transactions` et `Details` résolvent la période par `TimeProvider` via `LocalToday` de la classe de base ; `FakeTimeProvider` dans les tests ; amorçage du test de capture E2E ramené dans le mois courant). `verify.ps1` : 38 + 783 + 56 E2E verts, QUALITY GATE PASSED.
-- Le CS9107 interdit de capturer `timeProvider` dans une classe dérivée qui le passe aussi à la base : passer par un membre protégé de la base.
-- **Lenteur E2E non expliquée** : la suite a pris 18 min 23 s (≈ 5 min nominal) alors que tous les tests passent. À analyser (durée par test dans le journal TRX).
-- **Reste à faire** : release **1.3.4** (PATCH : 2 `fix:`, 1 `test:`) ; notes « What's New » du script déjà à jour ; tag annoté `v1.3.4`, `scripts/package-release.ps1`, `scripts/publish-github-release.ps1 -Tag v1.3.4` et `git push`, chacun sur accord de l'utilisateur.
-
-### Passation du 01/11/2026 (release 1.3.4 publiée)
-- **État** : `main` et le tag `v1.3.4` (sur `1c1ccf9`) sont poussés ; la Release GitHub porte le zip Windows, le tar.gz Linux et `SHA256SUMS.txt`. `verify.ps1` : 38 + 783 + 56 E2E verts, QUALITY GATE PASSED. L'utilisateur a confirmé sous Linux que la boucle d'URL sur base verrouillée a disparu et que la déconnexion fonctionne. Seul fichier non suivi : `Cadran.Launcher/Properties/` (ne jamais l'ajouter).
-- **Reste à faire** :
-  1. **Lenteur E2E non expliquée** : la suite a pris 18 min 23 s (≈ 5 min nominal) alors que tout passe. Pistes : durée par test dans un journal TRX, `WaitForSelectorAsync` qui attend son délai maximal, base `tests/Ledger.Tests.E2E/bin/Release/net9.0/data/cadran.db` partagée qui grossit (un utilisateur par test), `CategorySeedService.LoadCategoryTranslationsAsync` qui charge les traductions de tous les utilisateurs puis filtre en mémoire.
-  2. Facultatif : captures de `/Accounts/Reconcile` pour la documentation ; amorçages E2E ou tests qui dépendent encore de `DateTime.Today` (un 1er du mois les révèle).
-- **Points d'attention** : le CS9107 interdit de capturer `timeProvider` dans une classe dérivée qui le passe aussi à la base (utiliser `LocalToday` de `TransactionOperationsPageModelBase`). Ne pas modifier de fichier pendant `verify.ps1` (≈ 8 min nominal). Ne rien pousser, taguer ni publier sans accord ; aucun nom de domaine privé ni IP interne dans le dépôt (hook `pre-push`).
-
-### Mise à jour du 01/11/2026 (lenteur E2E résolue)
-- **Cause** : `Program` lit `ConnectionStrings:DefaultConnection` avant l'application de `ConfigureAppConfiguration` ; le fixture E2E n'atteignait donc jamais sa base temporaire et toute la suite écrivait dans `tests/Ledger.Tests.E2E/bin/Release/net9.0/data/cadran.db` (103 Mo, 468 utilisateurs après des exécutions cumulées), d'où le démarrage qui se figeait et la suite à 18 min.
-- **Correctif** (`ab170c8`) : `UseSetting` dans `AppWebTestFixture` ; test `TestDatabaseIsolationTests` (rouge par assertion, puis vert) ; `DateTimeKind.Local` ajouté au amorçage de `DocumentationScreenshotLot3GeneratorTests`. `verify.ps1` : 38 + 783 + 57 E2E verts (E2E en 1 min 4 s), QUALITY GATE PASSED. Non poussé.
-- **Reste à faire** : facultatif seulement (captures de `/Accounts/Reconcile`, amorçages dépendant de `DateTime.Today`). Le risque quadratique de `CategorySeedService.LoadCategoryTranslationsAsync` reste faible en production mono-utilisateur. Release 1.3.5 (PATCH) possible sur accord.
-
-### Mise à jour du 01/11/2026 (points facultatifs traités)
-- `DocumentationScreenshotLot2GeneratorTests` : amorçage calé sur le 13 en début de mois (décalage max. 12 jours) ; les autres `DateTime.Today` des tests sont sans risque. Nouveau `DocumentationScreenshotLot7GeneratorTests` : capture de `/Accounts/Reconcile` (`25-manual-reconciliation-screen*.png`), guides `docs/screens/25-manual-reconciliation.md` et `docs/fr/screens/25-…` (pas de version `de`, ce dossier s'arrête au guide 11), liens dans les index et les pages 24. `verify.ps1` : 38 + 783 + 58 E2E verts, QUALITY GATE PASSED.
-- **Reste à faire** : `git push origin main` sur accord ; release 1.3.5 (PATCH) possible.
-
-### Passation du 01/11/2026 (fin de session : lenteur E2E, captures, guide 25)
-- **État** : `main` local en avance de 4 commits sur `origin/main` (poussé jusqu'à `543f962`) : `57d88dc` (`test:` générateur Lot7 + amorçage Lot2) et `1d9afff` (`docs:` guide 25 en/fr). Les commits `ab170c8` et `543f962` sont déjà poussés. `verify.ps1` sur `1d9afff` : 38 + 783 + 58 E2E verts, QUALITY GATE PASSED. Arbre propre sauf `Cadran.Launcher/Properties/` (non suivi).
-- **Acquis de la session** : la suite E2E écrivait dans `tests/Ledger.Tests.E2E/bin/Release/net9.0/data/cadran.db` (chaîne de connexion lue par `Program` avant `ConfigureAppConfiguration`) ; corrigé par `UseSetting` dans `AppWebTestFixture`, gardé par `TestDatabaseIsolationTests`. E2E : 18 min → 1 min 7 s. Si un dossier `data/` réapparaît dans `bin`, la régression est là.
-- **Reste à faire (dans l'ordre)** :
-  1. **Suivre `Cadran.Launcher/Properties/` dans Git** (demande de l'utilisateur, annule la consigne « ne jamais l'ajouter »). Il contient `PublishProfiles/FolderProfile.pubxml` (profil de publication, à suivre) et `FolderProfile.pubxml.user` (préférences propres au poste : **ne pas le suivre**, l'ajouter à `.gitignore` sous la forme `*.pubxml.user`). Vérifier que `scripts/publish-windows.ps1` n'écrase pas le profil et que `FolderProfile.pubxml` ne contient aucun chemin de poste ni secret, puis commit `chore:`.
-  2. `git push origin main` (4 commits) sur accord.
-  3. Release **1.3.5** (PATCH : `fix:` fixture E2E, `test:`, `docs:`) à proposer ; ni tag, ni push, ni publication sans accord (`/github-release`).
-  4. Facultatif : version allemande du guide 25 (le dossier `docs/de/screens` s'arrête au guide 11, donc l'ajouter seule serait incohérente) ; filtre SQL dans `CategorySeedService.LoadCategoryTranslationsAsync` (charge les traductions de tous les utilisateurs, risque faible en mono-utilisateur).
-- **Points d'attention** : `verify.ps1` en arrière-plan (≈ 3 min maintenant), sans modifier de fichier pendant son exécution. Dépôt en LF (`core.autocrlf=true`), Python disponible (`python -I`) mais `sed`/Edit suffisent. Aucun nom de domaine privé ni IP interne dans le dépôt (hook `pre-push`).
-
-### Mise à jour du 01/11/2026 (release 1.3.5 publiée)
-- **Fait** : `Cadran.Launcher/Properties/PublishProfiles/FolderProfile.pubxml` suivi (`770ac06`), `*.pubxml.user` ignoré ; tout est poussé ; tag annoté `v1.3.5` sur `5b6dca1` ; Release GitHub publiée avec le zip Windows, le tar.gz Linux et `SHA256SUMS.txt`. Cette release ne change rien dans l'application (fixture E2E, tests, guide 25). `verify.ps1` vert sur `1d9afff` (38 + 783 + 58 E2E, PASSED), non relancé sur `5b6dca1` (documentation et script de release seulement) ; contenu des archives non contrôlé (aucun `*.db`, `appsettings.Development.json` ni `.sonar-token` à vérifier).
-- **Reste à faire** : les points 1 à 3 de la passation précédente sont clos. Seuls restent les facultatifs : guide 25 en allemand (à ajouter avec les guides 12 à 24 manquants, sinon incohérent) et filtre SQL dans `CategorySeedService.LoadCategoryTranslationsAsync`. Le dossier `Cadran.Launcher/Properties/` n'est plus à exclure des commits.
-
-### Passation du 01/11/2026 (fin de session : guides allemands, filtre SQL)
-- **État** : `main` poussé jusqu'à `645f18b` (guides allemands 12 à 25 `d720ae6`, filtre SQL des traductions de catégories `645f18b`). `verify.ps1` : 38 + 784 + 58 E2E verts, QUALITY GATE PASSED. Arbre propre.
-- **Reste à faire** : rien. Release possible sur accord (`/github-release`) : un `docs:` et un `perf:` depuis `v1.3.5`, donc PATCH 1.3.6 si l'utilisateur la souhaite ; ni tag ni publication sans accord.
-- **Point d'attention** : les guides allemands n'ont été vérifiés que pour les liens et les images, pas relus par un germanophone.
+- `./verify.ps1` : `powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./verify.ps1` (pas de `pwsh`), ≈ 3 min ; ne pas modifier de fichier pendant son exécution.
+- Sortie du build en français avec espaces insécables : en tenir compte dans les regex.
+- Dépôt en LF (`core.autocrlf=true`) mais certains fichiers de test sont en CRLF : conserver la fin de ligne de chaque fichier ; pour un fichier CRLF, éviter `Edit` multi-lignes (préférer un nouveau fichier ou `sed`).
+- Toujours lire un fichier de test avant de l'écrire (un `Write` a déjà écrasé des tests existants).
+- Un champ d'une classe à constructeur primaire ne peut pas référencer un autre champ d'instance (CS0236) ; CS9107 interdit de capturer `timeProvider` dans une classe dérivée qui le passe à la base (utiliser `LocalToday` de `TransactionOperationsPageModelBase`).
+- Le jeton Sonar est un jeton d'analyse : `measures/component_tree` est refusé, `issues/search` fonctionne.
+- Aucun nom de domaine privé ni IP interne dans le dépôt (hook `pre-push`).
+- Le tag `v1.3.0` pointe sur `bdcf930` : ne pas le déplacer.
+- Guides allemands vérifiés pour les liens et images seulement, pas relus par un germanophone.
