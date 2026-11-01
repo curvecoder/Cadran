@@ -157,7 +157,7 @@ public sealed class DocumentationScreenshotLot3GeneratorTests(AppWebTestFixture 
         // Les pages filtrent sur le mois courant : en début de mois, les opérations datées de plusieurs jours
         // plus tôt tomberaient le mois précédent et la capture n'aurait aucune ligne à afficher.
         var today = DateTime.Today;
-        var now = today.Day > 6 ? today : new DateTime(today.Year, today.Month, 7);
+        var now = today.Day > 6 ? today : new DateTime(today.Year, today.Month, 7, 0, 0, 0, DateTimeKind.Local);
 
         var salaryTx = new Transaction
         {

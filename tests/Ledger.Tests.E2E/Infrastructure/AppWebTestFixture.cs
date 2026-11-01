@@ -60,6 +60,11 @@ public sealed class AppWebTestFixture : WebApplicationFactory<Program>
         builder.UseEnvironment("Testing");
         builder.UseStaticWebAssets();
 
+        // Program lit la chaîne de connexion au démarrage de son builder, avant que ConfigureAppConfiguration
+        // ne s'applique : sans ce réglage d'hôte, l'application ouvre data/cadran.db du dossier de sortie, partagé
+        // entre les exécutions, qui grossit et ralentit le démarrage.
+        builder.UseSetting("ConnectionStrings:DefaultConnection", $"Data Source={_databasePath};Mode=ReadWriteCreate;Foreign Keys=True;");
+
         builder.ConfigureAppConfiguration((_, config) =>
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
