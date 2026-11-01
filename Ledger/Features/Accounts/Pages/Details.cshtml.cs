@@ -62,7 +62,7 @@ public class DetailsModel(
     {
         var defaultPeriod = await LoadListingSettingsAsync(cancellationToken);
 
-        var resolvedPeriod = BudgetPeriodCalculator.ResolvePeriod(Period, StartDate, EndDate, defaultPeriod);
+        var resolvedPeriod = BudgetPeriodCalculator.ResolvePeriod(Period, StartDate, EndDate, defaultPeriod, today: LocalToday);
         StartDate = resolvedPeriod.StartDate;
         EndDate = resolvedPeriod.EndDate;
         Period = resolvedPeriod.Period;

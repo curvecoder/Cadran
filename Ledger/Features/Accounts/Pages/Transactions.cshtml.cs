@@ -79,7 +79,7 @@ public class TransactionsModel(
         var defaultPeriod = await LoadListingSettingsAsync(cancellationToken);
         SalaryMonthStartDay = await UiSettingsService.GetSalaryMonthStartDayAsync(cancellationToken);
 
-        var resolvedPeriod = BudgetPeriodCalculator.ResolvePeriod(Period, StartDate, EndDate, defaultPeriod, SalaryMonthStartDay);
+        var resolvedPeriod = BudgetPeriodCalculator.ResolvePeriod(Period, StartDate, EndDate, defaultPeriod, SalaryMonthStartDay, LocalToday);
         StartDate = resolvedPeriod.StartDate;
         EndDate = resolvedPeriod.EndDate;
         Period = resolvedPeriod.Period;

@@ -8,6 +8,7 @@ using Ledger.Infrastructure.Configuration;
 using Ledger.Infrastructure.Data;
 using Ledger.Tests.Fixtures;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
@@ -15,6 +16,8 @@ namespace Ledger.Tests.Reports;
 
 public sealed class ReportServiceBudgetDateTests : IDisposable
 {
+    private static readonly DateTime _today = new(2026, 10, 15, 0, 0, 0, DateTimeKind.Unspecified);
+    private readonly FakeTimeProvider _clock = new(new DateTimeOffset(2026, 10, 15, 12, 0, 0, TimeSpan.Zero));
     private readonly AppDbContext _context;
     private readonly Microsoft.Data.Sqlite.SqliteConnection _connection;
     private readonly ReportService _reportService;
@@ -34,8 +37,8 @@ public sealed class ReportServiceBudgetDateTests : IDisposable
         var mockLocalizer = new Mock<IStringLocalizer>();
         mockLocalizer.Setup(l => l[It.IsAny<string>()]).Returns((string key) => new LocalizedString(key, key));
 
-        var recurringService = new RecurringExpenseService(_context, TimeProvider.System);
-        _reportService = new ReportService(_context, mockLocalizedService.Object, recurringService, mockLocalizer.Object, TimeProvider.System);
+        var recurringService = new RecurringExpenseService(_context, _clock);
+        _reportService = new ReportService(_context, mockLocalizedService.Object, recurringService, mockLocalizer.Object, _clock);
 
         SeedTestData();
     }
@@ -119,8 +122,8 @@ public sealed class ReportServiceBudgetDateTests : IDisposable
             Id = Guid.NewGuid(),
             UserId = TestUserId,
             BankAccountId = _bankAccountId,
-            Date = DateTime.Today.AddDays(-2),
-            BudgetDate = DateTime.Today.AddMonths(1), // Décalé au mois prochain
+            Date = _today.AddDays(-2),
+            BudgetDate = _today.AddMonths(1), // Décalé au mois prochain
             Amount = 2500m,
             Type = TransactionType.Credit,
             Label = "SALAIRE DECALÉ",
@@ -132,8 +135,8 @@ public sealed class ReportServiceBudgetDateTests : IDisposable
             Id = Guid.NewGuid(),
             UserId = TestUserId,
             BankAccountId = _bankAccountId,
-            Date = DateTime.Today.AddMonths(-1), // Transaction du mois dernier
-            BudgetDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1, 0, 0, 0, DateTimeKind.Utc), // Rattachée au mois en cours
+            Date = _today.AddMonths(-1), // Transaction du mois dernier
+            BudgetDate = new DateTime(_today.Year, _today.Month, 1, 0, 0, 0, DateTimeKind.Utc), // Rattachée au mois en cours
             Amount = 2800m,
             Type = TransactionType.Credit,
             Label = "SALAIRE RATTACHÉ CE MOIS",

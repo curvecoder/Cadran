@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
@@ -25,6 +26,8 @@ namespace Ledger.Tests.Accounts;
 
 public sealed class DetailsModelTests : IDisposable
 {
+    private static readonly DateTime _today = new(2026, 6, 15, 0, 0, 0, DateTimeKind.Unspecified);
+    private readonly FakeTimeProvider _clock = new(new DateTimeOffset(2026, 6, 15, 12, 0, 0, TimeSpan.Zero));
     private readonly AppDbContext _context;
     private readonly SqliteConnection _connection;
     private readonly Mock<IAccountBalanceService> _mockBalanceService;
@@ -88,7 +91,7 @@ public sealed class DetailsModelTests : IDisposable
                 UserId = "test-user-id",
                 BankAccountId = _bankAccountId,
                 CategoryId = cat1.Id,
-                Date = DateTime.Today.AddDays(-5),
+                Date = _today.AddDays(-5),
                 Amount = 55.40m,
                 Type = TransactionType.Debit,
                 Label = "Supermarché Match"
@@ -98,7 +101,7 @@ public sealed class DetailsModelTests : IDisposable
                 UserId = "test-user-id",
                 BankAccountId = _bankAccountId,
                 CategoryId = cat2.Id,
-                Date = DateTime.Today.AddDays(-2),
+                Date = _today.AddDays(-2),
                 Amount = 15.00m,
                 Type = TransactionType.Debit,
                 Label = "Ticket Métro"
@@ -107,7 +110,7 @@ public sealed class DetailsModelTests : IDisposable
             {
                 UserId = "test-user-id",
                 BankAccountId = _bankAccountId,
-                Date = DateTime.Today.AddDays(-1),
+                Date = _today.AddDays(-1),
                 Amount = 2000.00m,
                 Type = TransactionType.Credit,
                 Label = "Virement Employeur"
@@ -139,7 +142,7 @@ public sealed class DetailsModelTests : IDisposable
             _mockRecurringService.Object,
             _mockLocalizedEntityService.Object,
             _mockMerchantService.Object,
-            TimeProvider.System)
+            _clock)
         {
             PageContext = pageContext,
             TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(httpContext, Mock.Of<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider>())
@@ -243,11 +246,11 @@ public sealed class DetailsModelTests : IDisposable
         model.ActiveFilterCriteriaCount.Should().Be(1);
         model.Type = null;
 
-        model.StartDate = DateTime.Today.AddDays(-10);
+        model.StartDate = _today.AddDays(-10);
         model.HasActiveFilters.Should().BeTrue();
         model.ActiveFilterCriteriaCount.Should().Be(1);
         model.StartDate = null;
-        model.EndDate = DateTime.Today;
+        model.EndDate = _today;
         model.HasActiveFilters.Should().BeTrue();
         model.ActiveFilterCriteriaCount.Should().Be(1);
         model.EndDate = null;
@@ -445,7 +448,7 @@ public sealed class DetailsModelTests : IDisposable
             newCategoryId: cat.Id,
             merchantId: null,
             newMerchantName: "Match Express",
-            budgetDate: DateTime.Today.AddMonths(1),
+            budgetDate: _today.AddMonths(1),
             notes: "Note test",
             statusId: null,
             status: TransactionStatus.Cleared,
@@ -609,7 +612,7 @@ public sealed class DetailsModelTests : IDisposable
         {
             UserId = "test-user-id",
             BankAccountId = _bankAccountId,
-            Date = DateTime.Today,
+            Date = _today,
             Amount = 50m,
             Type = TransactionType.Debit,
             Label = "Test Split"

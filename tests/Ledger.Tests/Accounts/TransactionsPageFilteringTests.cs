@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
@@ -26,6 +27,8 @@ namespace Ledger.Tests.Accounts;
 
 public sealed class TransactionsPageFilteringTests : IDisposable
 {
+    private static readonly DateTime _today = new(2026, 6, 15, 0, 0, 0, DateTimeKind.Unspecified);
+    private readonly FakeTimeProvider _clock = new(new DateTimeOffset(2026, 6, 15, 12, 0, 0, TimeSpan.Zero));
     private readonly AppDbContext _context;
     private readonly SqliteConnection _connection;
     private readonly Mock<ITransactionStatusService> _mockStatusService;
@@ -79,7 +82,7 @@ public sealed class TransactionsPageFilteringTests : IDisposable
                 UserId = "test-user-id",
                 BankAccountId = _account1Id,
                 CategoryId = _catFoodId,
-                Date = DateTime.Today.AddDays(-10),
+                Date = _today.AddDays(-10),
                 Amount = 45m,
                 Type = TransactionType.Debit,
                 Label = "Boulangerie Paul"
@@ -89,7 +92,7 @@ public sealed class TransactionsPageFilteringTests : IDisposable
                 UserId = "test-user-id",
                 BankAccountId = _account1Id,
                 CategoryId = _catTransportId,
-                Date = DateTime.Today.AddDays(-5),
+                Date = _today.AddDays(-5),
                 Amount = 30m,
                 Type = TransactionType.Debit,
                 Label = "SNCF Billet"
@@ -98,7 +101,7 @@ public sealed class TransactionsPageFilteringTests : IDisposable
             {
                 UserId = "test-user-id",
                 BankAccountId = _account2Id,
-                Date = DateTime.Today.AddDays(-2),
+                Date = _today.AddDays(-2),
                 Amount = 1500m,
                 Type = TransactionType.Credit,
                 Label = "Salaire Virement"
@@ -129,7 +132,7 @@ public sealed class TransactionsPageFilteringTests : IDisposable
             _mockMerchantService.Object,
             _mockRecurringService.Object,
             _mockLocalizedEntityService.Object,
-            TimeProvider.System)
+            _clock)
         {
             PageContext = pageContext,
             TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(httpContext, Mock.Of<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider>())
@@ -143,7 +146,7 @@ public sealed class TransactionsPageFilteringTests : IDisposable
         {
             UserId = "test-user-id",
             BankAccountId = _account1Id,
-            Date = DateTime.Today.AddDays(-1),
+            Date = _today.AddDays(-1),
             Amount = 12m,
             Type = TransactionType.Debit,
             Label = "Cafe saisi",
@@ -168,7 +171,7 @@ public sealed class TransactionsPageFilteringTests : IDisposable
         {
             UserId = "test-user-id",
             BankAccountId = _account1Id,
-            Date = DateTime.Today.AddDays(-1),
+            Date = _today.AddDays(-1),
             Amount = 12m,
             Type = TransactionType.Debit,
             Label = "Cafe saisi",
@@ -278,11 +281,11 @@ public sealed class TransactionsPageFilteringTests : IDisposable
         model.Type = null;
 
         // 6. StartDate / EndDate
-        model.StartDate = DateTime.Today.AddDays(-10);
+        model.StartDate = _today.AddDays(-10);
         model.HasActiveFilters.Should().BeTrue();
         model.ActiveFilterCriteriaCount.Should().Be(1);
         model.StartDate = null;
-        model.EndDate = DateTime.Today;
+        model.EndDate = _today;
         model.HasActiveFilters.Should().BeTrue();
         model.ActiveFilterCriteriaCount.Should().Be(1);
         model.EndDate = null;
@@ -319,7 +322,7 @@ public sealed class TransactionsPageFilteringTests : IDisposable
         model.AccountId = _account1Id;
         model.CategoryId = _catFoodId;
         model.Type = TransactionType.Debit;
-        model.StartDate = DateTime.Today;
+        model.StartDate = _today;
         model.AmountValue = 20m;
         model.AmountOperator = "eq";
         model.RuleFilter = "matched";

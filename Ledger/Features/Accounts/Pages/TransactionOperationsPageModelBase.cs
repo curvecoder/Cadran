@@ -34,6 +34,8 @@ public abstract class TransactionOperationsPageModelBase(
     protected readonly ILocalizedEntityService LocalizedEntityService = localizedEntityService;
 
     /// <summary>Date du jour au format attendu par un champ HTML de type date.</summary>
+    protected DateTime LocalToday => timeProvider.GetLocalNow().Date;
+
     public string TodayInputValue => timeProvider.GetLocalNow().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     public abstract string DefaultTableKey { get; }
