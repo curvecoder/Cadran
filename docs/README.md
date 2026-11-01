@@ -49,3 +49,4 @@ Welcome to the comprehensive, step-by-step user manual for **Cadran**. Every scr
 - 📊 **[22. Financial Reports & Charts](screens/22-financial-reports.md)** — Visual category spending breakdown, top expenses, and interactive pivot tables.
 - 🎨 **[23. Appearance & Theme Settings](screens/23-appearance-settings.md)** — Custom fonts, scale adjustments, and compact/comfort ledger density.
 - 🖥️ **[24. Windows Tray Launcher & Backups](screens/24-backups-supervision.md)** — Tray supervisor, automated snapshots, and one-click database restore.
+- 🔗 **[25. Matching Manual Entries](screens/25-manual-reconciliation.md)** — Pair hand-typed operations with imported transactions and merge them.

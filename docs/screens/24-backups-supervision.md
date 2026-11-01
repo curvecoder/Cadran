@@ -1,6 +1,6 @@
 # User Guide: Windows Tray Launcher & Automated Backups
 
-[← Previous: 23 - Appearance & Theme Settings](23-appearance-settings.md) | [← Back to Master Index](../README.md)
+[← Previous: 23 - Appearance & Theme Settings](23-appearance-settings.md) | [← Back to Master Index](../README.md) | [Next: 25 - Matching Manual Entries →](25-manual-reconciliation.md)
 
 ---
 

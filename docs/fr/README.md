@@ -49,3 +49,4 @@ Bienvenue dans le manuel d'utilisation complet et pas à pas de **Cadran**. Chaq
 - 📊 **[22. Rapports Financiers & Graphiques](screens/22-financial-reports.md)** — Répartition visuelle des dépenses, postes majeurs et tableaux croisés dynamiques interactifs.
 - 🎨 **[23. Paramètres d'Apparence & Typographie](screens/23-appearance-settings.md)** — Polices personnalisées, échelle du texte et modes compact/confort.
 - 🖥️ **[24. Lanceur Windows Tray & Sauvegardes](screens/24-backups-supervision.md)** — Superviseur en barre des tâches, instantanés automatiques et restauration en un clic.
+- 🔗 **[25. Rapprocher les Saisies Manuelles](screens/25-manual-reconciliation.md)** — Associer les opérations saisies à la main aux opérations importées et les fusionner.

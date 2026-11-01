@@ -1,6 +1,6 @@
 # Guide Utilisateur : Lanceur Windows Tray & Sauvegardes Automatiques
 
-[← Précédent : 23 - Paramètres d'Apparence & Thèmes](23-appearance-settings.md) | [← Retour à l'Index Général](../README.md)
+[← Précédent : 23 - Paramètres d'Apparence & Thèmes](23-appearance-settings.md) | [← Retour à l'Index Général](../README.md) | [Suivant : 25 - Rapprocher les Saisies Manuelles →](25-manual-reconciliation.md)
 
 ---
 
