@@ -13,8 +13,10 @@ public class LogoutModel(IAuthService authService, IDatabaseEncryptionService en
         return Redirect("/Security/Login");
     }
 
+    // Un GET ne doit pas changer d'état : n'importe quelle page pourrait sinon déconnecter l'utilisateur
+    // et reverrouiller la base par une simple image ou un lien. Seul le POST antiforgery déconnecte.
     public Task<IActionResult> OnGetAsync(CancellationToken cancellationToken = default)
     {
-        return OnPostAsync(cancellationToken);
+        return Task.FromResult<IActionResult>(Redirect("/Security/Login"));
     }
 }

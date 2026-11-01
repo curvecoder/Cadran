@@ -238,15 +238,26 @@ public class SecurityPageModelsTests
         var model = new LogoutModel(mockAuth.Object, mockEncryption.Object);
 
         var postResult = await model.OnPostAsync();
+
         postResult.Should().BeOfType<RedirectResult>()
             .Which.Url.Should().Be("/Security/Login");
+        mockAuth.Verify(a => a.SignOutAsync(), Times.Once);
+        mockEncryption.Verify(e => e.LockUnlessRememberedAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task OnGetAsync_WhenInvoked_RedirectsToLoginWithoutSigningOut()
+    {
+        var mockAuth = new Mock<IAuthService>();
+        var mockEncryption = new Mock<IDatabaseEncryptionService>();
+        var model = new LogoutModel(mockAuth.Object, mockEncryption.Object);
 
         var getResult = await model.OnGetAsync();
+
         getResult.Should().BeOfType<RedirectResult>()
             .Which.Url.Should().Be("/Security/Login");
-
-        mockAuth.Verify(a => a.SignOutAsync(), Times.Exactly(2));
-        mockEncryption.Verify(e => e.LockUnlessRememberedAsync(), Times.Exactly(2));
+        mockAuth.Verify(a => a.SignOutAsync(), Times.Never);
+        mockEncryption.Verify(e => e.LockUnlessRememberedAsync(), Times.Never);
     }
 
     #endregion
