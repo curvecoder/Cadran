@@ -64,7 +64,8 @@ We are excited to announce the release of **Cadran $Tag**!
 Cadran is a modern, local-first, privacy-first personal finance, budget tracking, and wealth management platform built on ASP.NET Core 9, C# 12, Entity Framework Core, and Encrypted SQLite (SQLCipher).
 
 ### What's New in $Tag
-- **Fixes**: signing out works again. The `/Security/Logout` page had no view and the sign-out form sent no antiforgery token, so the session was never ended and the button returned an error; it now ends the session and redirects to the sign-in page. When the encryption key is not remembered on the device, signing out also locks the database again, so the passphrase is asked on the next sign-in.
+- **Fixes**: opening the application right after it starts, with an old sign-in cookie, no longer loops on the unlock page (the URL grew with every redirect and the page failed with "file is not a database"). The error page stays reachable while the database is locked, and the sign-in cookie is not validated against the database until it is unlocked.
+- **Fixes**: `GET /Security/Logout` no longer signs out; only the sign-out form (POST) does, so an external link cannot end the session or lock the database.
 
 ### Key Features
 - **Local-First & Privacy-First**: 100% data sovereignty. All records stored locally in encrypted SQLite (`cadran.db`). Zero telemetry, zero external scrapers.
