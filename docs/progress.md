@@ -210,3 +210,8 @@ _Mis à jour le 01/11/2026 : guides allemands 12 à 25 (`d720ae6`) et filtre SQL
 ### Mise à jour du 01/11/2026 (release 1.3.5 publiée)
 - **Fait** : `Cadran.Launcher/Properties/PublishProfiles/FolderProfile.pubxml` suivi (`770ac06`), `*.pubxml.user` ignoré ; tout est poussé ; tag annoté `v1.3.5` sur `5b6dca1` ; Release GitHub publiée avec le zip Windows, le tar.gz Linux et `SHA256SUMS.txt`. Cette release ne change rien dans l'application (fixture E2E, tests, guide 25). `verify.ps1` vert sur `1d9afff` (38 + 783 + 58 E2E, PASSED), non relancé sur `5b6dca1` (documentation et script de release seulement) ; contenu des archives non contrôlé (aucun `*.db`, `appsettings.Development.json` ni `.sonar-token` à vérifier).
 - **Reste à faire** : les points 1 à 3 de la passation précédente sont clos. Seuls restent les facultatifs : guide 25 en allemand (à ajouter avec les guides 12 à 24 manquants, sinon incohérent) et filtre SQL dans `CategorySeedService.LoadCategoryTranslationsAsync`. Le dossier `Cadran.Launcher/Properties/` n'est plus à exclure des commits.
+
+### Passation du 01/11/2026 (fin de session : guides allemands, filtre SQL)
+- **État** : `main` poussé jusqu'à `645f18b` (guides allemands 12 à 25 `d720ae6`, filtre SQL des traductions de catégories `645f18b`). `verify.ps1` : 38 + 784 + 58 E2E verts, QUALITY GATE PASSED. Arbre propre.
+- **Reste à faire** : rien. Release possible sur accord (`/github-release`) : un `docs:` et un `perf:` depuis `v1.3.5`, donc PATCH 1.3.6 si l'utilisateur la souhaite ; ni tag ni publication sans accord.
+- **Point d'attention** : les guides allemands n'ont été vérifiés que pour les liens et les images, pas relus par un germanophone.
