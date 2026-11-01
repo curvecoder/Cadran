@@ -197,7 +197,10 @@ public sealed class DocumentationScreenshotLot2GeneratorTests(AppWebTestFixture 
         var stReconciled = statuses.FirstOrDefault(s => string.Equals(s.Code, "Reconciled", StringComparison.Ordinal));
         var stCleared = statuses.FirstOrDefault(s => string.Equals(s.Code, "Cleared", StringComparison.Ordinal));
 
-        var now = DateTime.Today;
+        // Les pages filtrent sur le mois courant : en début de mois, des opérations datées de plusieurs jours plus tôt
+        // tomberaient le mois précédent ; le décalage le plus grand de l'amorçage est de 12 jours.
+        var today = DateTime.Today;
+        var now = today.Day > 12 ? today : new DateTime(today.Year, today.Month, 13, 0, 0, 0, DateTimeKind.Local);
         var sampleTransactions = new List<Transaction>
         {
             new()
