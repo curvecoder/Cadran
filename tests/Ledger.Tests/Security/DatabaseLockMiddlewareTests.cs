@@ -125,4 +125,32 @@ public class DatabaseLockMiddlewareTests
         httpContext.Response.StatusCode.Should().Be(302);
         httpContext.Response.Headers.Location.ToString().Should().Be("/");
     }
+
+    [Theory]
+    [InlineData("/Error", "")]
+    [InlineData("/Error", "?returnUrl=%2FSecurity%2FUnlockDatabase")]
+    [InlineData("/error", "")]
+    public async Task InvokeAsync_WhenDatabaseLockedAndAccessingErrorPage_AllowsAccessWithoutRedirect(string path, string query)
+    {
+        var keyHolder = new DatabaseKeyHolder();
+        keyHolder.SetKey(null, isEncrypted: true);
+
+        bool nextCalled = false;
+        RequestDelegate next = ctx =>
+        {
+            nextCalled = true;
+            return Task.CompletedTask;
+        };
+
+        var middleware = new DatabaseLockMiddleware(next);
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Path = path;
+        httpContext.Request.QueryString = new QueryString(query);
+
+        await middleware.InvokeAsync(httpContext, keyHolder);
+
+        nextCalled.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().NotBe(302);
+        httpContext.Response.Headers.Location.ToString().Should().BeEmpty();
+    }
 }

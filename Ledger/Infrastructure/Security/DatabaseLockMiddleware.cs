@@ -22,9 +22,13 @@ public sealed class DatabaseLockMiddleware(RequestDelegate next)
 
         var isUnlockPage = path.StartsWith("/Security/UnlockDatabase", StringComparison.OrdinalIgnoreCase);
 
+        // Le gestionnaire d'exceptions ré-exécute la requête vers /Error : la rediriger vers le déverrouillage
+        // ferait échouer la page de déverrouillage en boucle, avec un returnUrl qui s'imbrique à chaque tour.
+        var isErrorPage = path.Equals("/Error", StringComparison.OrdinalIgnoreCase);
+
         if (keyHolder.IsDatabaseEncrypted && !keyHolder.IsUnlocked)
         {
-            if (!isUnlockPage)
+            if (!isUnlockPage && !isErrorPage)
             {
                 var returnUrl = path + context.Request.QueryString.Value;
                 var redirectUrl = string.IsNullOrWhiteSpace(returnUrl) || string.Equals(returnUrl, "/", StringComparison.Ordinal)

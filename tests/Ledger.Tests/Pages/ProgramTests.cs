@@ -245,6 +245,48 @@ public class ProgramTests : IClassFixture<AppWebApplicationFactory>
         }
     }
 
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    public async Task ApplicationCookie_WhenSessionIsOldAndStampIsStale_SkipsValidationOnlyWhileDatabaseIsLocked(bool locked, bool expectedAccepted)
+    {
+        var keyHolder = _factory.Services.GetRequiredService<IDatabaseKeyHolder>();
+        try
+        {
+            keyHolder.SetKey(null, isEncrypted: locked);
+            using var scope = _factory.Services.CreateScope();
+            var httpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext { RequestServices = scope.ServiceProvider };
+            scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>().HttpContext = httpContext;
+            var options = scope.ServiceProvider
+                .GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>>()
+                .Get(IdentityConstants.ApplicationScheme);
+            var identity = new System.Security.Claims.ClaimsIdentity(
+                [
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
+                    new System.Security.Claims.Claim("AspNet.Identity.SecurityStamp", "stale-stamp")
+                ],
+                IdentityConstants.ApplicationScheme);
+            var properties = new Microsoft.AspNetCore.Authentication.AuthenticationProperties
+            {
+                IssuedUtc = DateTimeOffset.UtcNow.AddHours(-2)
+            };
+            var context = new Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext(
+                httpContext,
+                new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+                    IdentityConstants.ApplicationScheme, null, typeof(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler)),
+                options,
+                new Microsoft.AspNetCore.Authentication.AuthenticationTicket(new System.Security.Claims.ClaimsPrincipal(identity), properties, IdentityConstants.ApplicationScheme));
+
+            await options.Events.ValidatePrincipal(context);
+
+            (context.Principal is not null).Should().Be(expectedAccepted);
+        }
+        finally
+        {
+            keyHolder.SetKey(null, isEncrypted: false);
+        }
+    }
+
     [Fact]
     public void ConfigureLocalization_WhenDefaultThreadCulture_UsesEuroSymbol()
     {

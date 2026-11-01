@@ -154,6 +154,16 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     options.ExpireTimeSpan = TimeSpan.FromDays(14);
     options.SlidingExpiration = true;
+
+    // Au redémarrage, un cookie ancien déclenche la validation du tampon de sécurité, qui interroge la base : tant que
+    // celle-ci est chiffrée et verrouillée, SQLite répond « file is not a database » avant même la page de déverrouillage.
+    // Le cookie reste accepté sans lecture ; la validation reprend à la requête suivante une fois la base déverrouillée,
+    // et le middleware de verrouillage interdit tout accès applicatif entre-temps.
+    var validateSecurityStamp = options.Events.OnValidatePrincipal;
+    options.Events.OnValidatePrincipal = context =>
+        keyHolder.IsDatabaseEncrypted && !keyHolder.IsUnlocked
+            ? Task.CompletedTask
+            : validateSecurityStamp(context);
 });
 
 // ==============================================================================
