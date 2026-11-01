@@ -39,9 +39,7 @@ Remédier aux écarts relevés par l'audit du 29/10/2026 aux 17 règles d'or, pa
 - Release 1.2.1 : asset `Cadran-1.2.1-win-x64.exe` supprimé de GitHub ; notes de la release corrigées (ligne du tableau, somme, clôture Markdown du bloc de checksums). Scripts corrigés sur la branche `tache/retrait-exe-autonome` (`f78408f`, **non fusionnée**, issue de `main`) : `package-release.ps1` ne crée plus l'exe, `publish-github-release.ps1` ne le liste plus et construit la clôture Markdown par une variable (le backtick était interprété comme tabulation).
 
 ## Reste à faire (dans l'ordre)
-_Mis à jour le 01/11/2026 (contenu des archives 1.3.5 contrôlé : aucun `*.db`, `appsettings.Development.json`, `.sonar-token` ni clé) ; les points historiques (fusion de `tache/retrait-exe-autonome`, MA0051, clôture 1e) sont clos, toutes les branches sont fusionnées dans `main`, la release 1.3.5 est publiée._
-1. Guide 25 en allemand (`docs/de/screens/25-manual-reconciliation.md`) : à faire avec les guides 12 à 24, absents de `docs/de/screens` (qui s'arrête au guide 11) ; ajouter les liens dans `docs/de/README.md` et la page précédente.
-2. Filtre SQL dans `CategorySeedService.LoadCategoryTranslationsAsync` : il charge les traductions `Category` de tous les utilisateurs puis filtre en mémoire, pour chaque utilisateur amorcé au démarrage (coût quadratique ; sans effet en mono-utilisateur). Test rouge d'abord (Règle 15).
+_Mis à jour le 01/11/2026 : guides allemands 12 à 25 (`d720ae6`) et filtre SQL de `CategorySeedService.LoadCategoryTranslationsAsync` faits ; plus rien à faire. `verify.ps1` : QUALITY GATE PASSED._
 
 ## Points d'attention
 - `./verify.ps1` se lance avec `powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./verify.ps1` (pas de `pwsh`) ; durée ≈ 6 min, dont 5 min d'E2E.

@@ -169,14 +169,10 @@ public class CategorySeedService(AppDbContext dbContext, ILogger<CategorySeedSer
         }
     }
 
-    private async Task<List<EntityTranslation>> LoadCategoryTranslationsAsync(HashSet<Guid> categoryIds, CancellationToken cancellationToken)
+    private Task<List<EntityTranslation>> LoadCategoryTranslationsAsync(HashSet<Guid> categoryIds, CancellationToken cancellationToken)
     {
-        var allCategoryTranslations = await dbContext.EntityTranslations
-            .Where(t => t.EntityType == "Category")
-            .ToListAsync(cancellationToken).ConfigureAwait(false);
-
-        return allCategoryTranslations
-            .Where(t => categoryIds.Contains(t.EntityId))
-            .ToList();
+        return dbContext.EntityTranslations
+            .Where(t => t.EntityType == "Category" && categoryIds.Contains(t.EntityId))
+            .ToListAsync(cancellationToken);
     }
 }
