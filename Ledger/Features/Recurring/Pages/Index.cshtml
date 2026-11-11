@@ -518,10 +518,10 @@
                         <div class="col-6">
                             <label asp-for="Input.AmountTolerancePercentage" for="expenseTolerance" class="form-label small fw-semibold">@Localizer["Recurring.Tolerance"]</label>
                             <select asp-for="Input.AmountTolerancePercentage" id="expenseTolerance" class="form-select">
-                                <option value="0">0% (@Localizer["Recurring.ToleranceStrict"])</option>
-                                <option value="0.05">± 5%</option>
-                                <option value="0.10">± 10%</option>
-                                <option value="0.20">± 20%</option>
+                                <option value="@(0m.ToString(CultureInfo.CurrentCulture))">0% (@Localizer["Recurring.ToleranceStrict"])</option>
+                                <option value="@(0.05m.ToString("0.00", CultureInfo.CurrentCulture))">± 5%</option>
+                                <option value="@(0.10m.ToString("0.00", CultureInfo.CurrentCulture))">± 10%</option>
+                                <option value="@(0.20m.ToString("0.00", CultureInfo.CurrentCulture))">± 20%</option>
                             </select>
                         </div>
                     </div>
@@ -595,6 +595,15 @@
 
 @section Scripts {
     <script>
+        // Les valeurs du sélecteur suivent la culture du serveur (« 0,05 » en français) pour que le POST soit accepté par le binding décimal.
+        function selectTolerance(raw) {
+            const parsed = parseFloat((raw || '0.05').toString().replace(',', '.'));
+            const select = document.getElementById('expenseTolerance');
+            const wanted = isNaN(parsed) ? 0.05 : parsed;
+            const match = Array.from(select.options).find(opt => Math.abs(parseFloat(opt.value.replace(',', '.')) - wanted) < 0.0001);
+            select.value = match ? match.value : select.options[1].value;
+        }
+
         function openCreateModal() {
             document.getElementById('modalTitleText').textContent = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Localizer["Recurring.ModalNewTitle"].Value));
             document.getElementById('expenseId').value = '';
@@ -603,7 +612,7 @@
             document.getElementById('expenseAmount').value = '';
             document.getElementById('expenseDay').value = '';
             document.getElementById('expenseFrequency').value = '1';
-            document.getElementById('expenseTolerance').value = '0.05';
+            selectTolerance('0.05');
             document.getElementById('expenseCategory').value = '';
             document.getElementById('expenseAccount').value = '';
             document.getElementById('expenseNotes').value = '';
@@ -623,18 +632,7 @@
             document.getElementById('expenseDay').value = day || '';
             document.getElementById('expenseFrequency').value = freq || '1';
             
-            // Normalisation de la tolérance (0, 0.05, 0.10, 0.20)
-            const parsedTolerance = parseFloat((tolerance || '0.05').toString().replace(',', '.'));
-            const toleranceSelect = document.getElementById('expenseTolerance');
-            if (!isNaN(parsedTolerance)) {
-                const tolFormatted = parsedTolerance.toFixed(2);
-                const matchingOption = Array.from(toleranceSelect.options).find(opt => 
-                    parseFloat(opt.value).toFixed(2) === tolFormatted || opt.value === parsedTolerance.toString()
-                );
-                toleranceSelect.value = matchingOption ? matchingOption.value : (toleranceSelect.options[1]?.value || '0.05');
-            } else {
-                toleranceSelect.value = '0.05';
-            }
+            selectTolerance(tolerance);
 
             document.getElementById('expenseCategory').value = catId || '';
             document.getElementById('expenseAccount').value = accId || '';

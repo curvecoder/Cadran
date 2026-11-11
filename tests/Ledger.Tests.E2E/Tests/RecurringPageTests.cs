@@ -28,4 +28,20 @@ public sealed class RecurringPageTests(AppWebTestFixture webFixture, PlaywrightF
         response.Status.Should().Be(StatusCodes.Status200OK);
         await Expect(page.MainHeading).ToBeVisibleAsync();
     }
+
+    [Fact]
+    public async Task EditModal_WhenPatternIsChangedWithDefaultTolerance_PersistsNewPattern()
+    {
+        // Arrange
+        await RegisterAndSignInAsync();
+        var page = new RecurringPage(Page);
+        await page.NavigateAsync(BaseUrl);
+        await page.CreateAsync("Pret", "*REMBOURSEMENT DE PRET 10000979437*", "100");
+
+        // Act
+        await page.EditFirstPatternAsync("*REMBOURSEMENT DE * 10000979437*");
+
+        // Assert
+        await Expect(page.FirstRowPattern).ToHaveTextAsync("*REMBOURSEMENT DE * 10000979437*");
+    }
 }
