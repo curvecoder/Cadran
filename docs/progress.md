@@ -1,10 +1,10 @@
 # Progression — Fluxa (Cadran)
-Mis à jour : 01/11/2026. Note condensée : le détail des lots passés est dans `git log` (commits `1c88870` à `645f18b`).
+Mis à jour : 11/11/2026. Note condensée : le détail des lots passés est dans `git log` (commits `1c88870` à `645f18b`).
 
 ## État
-- `main` poussé jusqu'à `645f18b` ; dernier tag publié `v1.3.5`. Depuis : un `docs:` (guides allemands 12 à 25) et un `perf:` (filtre SQL de `CategorySeedService.LoadCategoryTranslationsAsync`).
-- `verify.ps1` : 38 + 784 + 58 E2E verts, QUALITY GATE PASSED. Aucune fiche de délégation ouverte.
-- **Reste à faire** : rien. Release 1.3.6 (PATCH) possible sur accord de l'utilisateur (`/github-release`) ; ni tag, ni push, ni publication sans accord.
+- `main` poussé jusqu'à `645f18b` ; dernier tag publié `v1.3.5`. Depuis : un `docs:` (guides allemands 12 à 25), un `perf:` (filtre SQL de `CategorySeedService.LoadCategoryTranslationsAsync`) et, **non poussé**, `0d68d8f` `fix:` (tolérance des charges récurrentes postée dans la culture du serveur : l'édition était invalide et rien n'était enregistré).
+- `verify.ps1` : 38 + 784 + 59 E2E verts, QUALITY GATE PASSED. Aucune fiche de délégation ouverte.
+- **Reste à faire** : la page `/Recurring` n'affiche aucune erreur de validation quand `ModelState` est invalide (ajouter un `ValidationSummary`, à valider avec l'utilisateur). Release 1.3.6 (PATCH) possible sur accord de l'utilisateur (`/github-release`) ; ni tag, ni push, ni publication sans accord.
 
 ## Acquis majeurs (résumé)
 - Harnais qualité complet (lot 1) : SonarAnalyzer partout, règles de culture/comparaison, MA0004 (sauf `tests/**`), MA0051 (sauf `tests/**` ; `OnModelCreating` et les longues méthodes découpées en composants métier), scans masquage / `!` / recopies.
@@ -28,3 +28,4 @@ Mis à jour : 01/11/2026. Note condensée : le détail des lots passés est dans
 - Aucun nom de domaine privé ni IP interne dans le dépôt (hook `pre-push`).
 - Le tag `v1.3.0` pointe sur `bdcf930` : ne pas le déplacer.
 - Guides allemands vérifiés pour les liens et images seulement, pas relus par un germanophone.
+- Les formulaires qui postent un décimal avec un point (`<option value="0.05">`) sont rejetés par le binding en culture `fr` : écrire la valeur avec `CultureInfo.CurrentCulture`. Les `<input type="number">` ne sont pas concernés.
