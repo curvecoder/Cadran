@@ -1,9 +1,10 @@
 # Progression — Fluxa (Cadran)
-Mis à jour : 11/11/2026. Note condensée : le détail des lots passés est dans `git log` (commits `1c88870` à `645f18b`).
+Mis à jour : 27/11/2026. Note condensée : le détail des lots passés est dans `git log` (commits `1c88870` à `645f18b`).
 
 ## État
 - `main` poussé jusqu'à `645f18b` ; dernier tag publié `v1.3.5`. Depuis : un `docs:` (guides allemands 12 à 25), un `perf:` (filtre SQL de `CategorySeedService.LoadCategoryTranslationsAsync`) et, **non poussé**, `0d68d8f` `fix:` (tolérance des charges récurrentes postée dans la culture du serveur : l'édition était invalide et rien n'était enregistré).
-- `verify.ps1` : 38 + 784 + 59 E2E verts, QUALITY GATE PASSED. Aucune fiche de délégation ouverte.
+- Correctif **non poussé** de l'import OFX (page `/Imports`) : la confirmation des doublons postait le compte sélectionné (vide après rattachement par `ACCTID`, d'où une erreur 500) au lieu de `LastResult.TargetBankAccountId` ; le formulaire de dépôt reprenait le handler resté dans l'URL. La version Linux déployée a encore le défaut.
+- `verify.ps1` : 38 + 784 + 61 E2E verts, QUALITY GATE PASSED. Aucune fiche de délégation ouverte.
 - **Reste à faire** : la page `/Recurring` n'affiche aucune erreur de validation quand `ModelState` est invalide (ajouter un `ValidationSummary`, à valider avec l'utilisateur). Release 1.3.6 (PATCH) possible sur accord de l'utilisateur (`/github-release`) ; ni tag, ni push, ni publication sans accord.
 
 ## Acquis majeurs (résumé)
