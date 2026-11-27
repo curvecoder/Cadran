@@ -18,7 +18,7 @@
 
     @if (!string.IsNullOrEmpty(Model.StatusNotification))
     {
-        <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <div class="alert alert-info alert-dismissible fade show" role="alert" data-testid="import-status">
             <i class="bi bi-info-circle me-2"></i> @Model.StatusNotification
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
@@ -101,7 +101,7 @@
 
                                 <div class="mb-3">
                                     <label class="form-label small fw-semibold" for="chosenAccountSelect">@Localizer["Imports.TargetBankAccount"]</label>
-                                    <select name="chosenAccountId" id="chosenAccountSelect" class="form-select" required>
+                                    <select name="chosenAccountId" id="chosenAccountSelect" data-testid="import-pending-account" class="form-select" required>
                                         <option value="">@Localizer["Imports.SelectExistingAccountPlaceholder"]</option>
                                         @foreach (var acc in Model.AvailableAccounts)
                                         {
@@ -122,7 +122,7 @@
                                     </div>
                                 }
 
-                                <button type="submit" class="btn btn-outline-primary btn-sm w-100">
+                                <button type="submit" class="btn btn-outline-primary btn-sm w-100" data-testid="import-pending-submit">
                                     <i class="bi bi-box-arrow-in-down me-1"></i> @Localizer["Imports.ImportIntoAccount"]
                                 </button>
                             </form>
@@ -223,7 +223,8 @@
             <div class="card-body p-0">
                 <form method="post" asp-page-handler="ConfirmDuplicates">
                     <input type="hidden" name="batchId" value="@Model.LastResult.BatchId" />
-                    <input type="hidden" name="bankAccountId" value="@Model.Input.BankAccountId" />
+                    @* Le compte qui a reçu l'import, pas la sélection du formulaire : l'ACCTID du fichier peut la remplacer. *@
+                    <input type="hidden" name="bankAccountId" value="@Model.LastResult.TargetBankAccountId" />
                     <input type="hidden" name="serializedDuplicates" value="@Model.SerializedSuspectedDuplicates" />
 
                     <div class="table-responsive">
@@ -244,7 +245,7 @@
                                 {
                                     <tr>
                                         <td class="text-center">
-                                            <input type="checkbox" id="dup-item-@item.Index" name="selectedIndices" value="@item.Index" class="form-check-input duplicate-item-chk" aria-label="@item.Label" />
+                                            <input type="checkbox" id="dup-item-@item.Index" name="selectedIndices" value="@item.Index" class="form-check-input duplicate-item-chk" data-testid="import-duplicate-checkbox" aria-label="@item.Label" />
                                         </td>
                                         <td class="small fw-semibold text-nowrap">@item.Date.ToString("dd/MM/yyyy")</td>
                                         <td>
@@ -276,7 +277,7 @@
                             <a href="/Imports" class="btn btn-outline-secondary btn-sm">
                                 <i class="bi bi-x-circle me-1"></i> @Localizer["Imports.IgnoreAllSuspects"]
                             </a>
-                            <button type="submit" class="btn btn-warning btn-sm fw-bold">
+                            <button type="submit" class="btn btn-warning btn-sm fw-bold" data-testid="import-duplicates-submit">
                                 <i class="bi bi-check-circle me-1"></i> @Localizer["Imports.ImportCheckedDuplicates"]
                             </button>
                         </div>
@@ -292,7 +293,8 @@
                 <div class="card-body p-4">
                     <h2 class="h5 fw-bold mb-3"><i class="bi bi-file-earmark-arrow-up me-2 text-primary"></i>@Localizer["Imports.UploadStatement"]</h2>
 
-                    <form method="post" enctype="multipart/form-data">
+                    @* Cible explicite : sans elle, le dépôt suivant reprendrait le handler resté dans l'URL. *@
+                    <form method="post" asp-page="./Index" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
                         <div class="mb-3">
@@ -320,7 +322,7 @@
                                     <i class="bi bi-folder2-open me-1"></i> @Localizer["Imports.ChooseFile"]
                                 </label>
                                 <span class="form-control form-control-sm text-truncate text-muted bg-light" id="fileNameDisplay">@Localizer["Imports.NoFileChosen"]</span>
-                                <input asp-for="Input.File" type="file" id="inputFileUpload" class="d-none" accept=".csv,.ofx,.qfx,.txt,.tsv" aria-label="@Localizer["Imports.BankFileCsvOfx"]" onchange="document.getElementById('fileNameDisplay').textContent = this.files[0] ? this.files[0].name : '@Localizer["Imports.NoFileChosen"]';" />
+                                <input asp-for="Input.File" type="file" id="inputFileUpload" data-testid="import-file" class="d-none" accept=".csv,.ofx,.qfx,.txt,.tsv" aria-label="@Localizer["Imports.BankFileCsvOfx"]" onchange="document.getElementById('fileNameDisplay').textContent = this.files[0] ? this.files[0].name : '@Localizer["Imports.NoFileChosen"]';" />
                             </div>
                             <span asp-validation-for="Input.File" class="text-danger small"></span>
                             <span class="form-text small text-muted">@Localizer["Imports.FormatsAcceptedDesc"]</span>
@@ -338,7 +340,7 @@
                             <span class="form-text small text-muted">@Localizer["Imports.CsvIgnoredIfOfx"]</span>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100 py-2">
+                        <button type="submit" class="btn btn-primary w-100 py-2" data-testid="import-submit">
                             <i class="bi bi-upload me-1"></i> @Localizer["Imports.StartImport"]
                         </button>
                     </form>
@@ -382,7 +384,7 @@
                                         <td class="font-monospace small">@batch.FileName</td>
                                         <td>@batch.BankAccount?.Name</td>
                                         <td><span class="badge bg-secondary-subtle text-secondary">@batch.Format</span></td>
-                                        <td class="text-end fw-bold text-success">+@batch.TotalImported</td>
+                                        <td class="text-end fw-bold text-success" data-testid="import-batch-total">+@batch.TotalImported</td>
                                         <td class="text-center">
                                             <form method="post" asp-page-handler="DeleteBatch" class="d-inline" onsubmit="return confirm('@Localizer["Imports.DeleteBatchConfirm"]');">
                                                 <input type="hidden" name="batchId" value="@batch.Id" />
